@@ -116,6 +116,15 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="sync">Sync</string>
     <string name="search_or_custom">Search / Custom</string>
     <string name="save">Save</string>
+    <string name="saved">Saved</string>
+    <string name="could_not_save_file">Could not save file</string>
+    <string name="save_session">Save Session</string>
+    <string name="quick_tags">Quick Tags</string>
+    <string name="apply_tags">Apply Tags</string>
+    <string name="common_tags">Common Tags</string>
+    <string name="search_sessions">Search Sessions</string>
+    <string name="simple_browser">Simple Browser</string>
+    <string name="stop">Stop</string>
     <string name="update">Update</string>
     <string name="clear">Clear</string>
     <string name="due_date">Due date</string>

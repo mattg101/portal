@@ -1,0 +1,110 @@
+package net.gsantner.markor.portal;
+
+import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+
+import net.gsantner.opoc.util.GsFileUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+
+public class PortalSessionRepository {
+    public static class SessionItem {
+        public final File file;
+        public final long modifiedAt;
+        public final String preview;
+        public final boolean hasAudio;
+        public final boolean hasImage;
+
+        public SessionItem(File file, long modifiedAt, String preview, boolean hasAudio, boolean hasImage) {
+            this.file = file;
+            this.modifiedAt = modifiedAt;
+            this.preview = preview;
+            this.hasAudio = hasAudio;
+            this.hasImage = hasImage;
+        }
+    }
+
+    private final PortalStorage _storage;
+
+    public PortalSessionRepository(@NonNull PortalStorage storage) {
+        _storage = storage;
+    }
+
+    public File createSession() throws IOException {
+        return _storage.createNewSessionFile();
+    }
+
+    public List<SessionItem> listSessions(String query) {
+        final File dir = _storage.getSessionsDir();
+        if (!dir.isDirectory()) {
+            return Collections.emptyList();
+        }
+        final File[] list = dir.listFiles((d, name) -> name.endsWith(".md"));
+        if (list == null) {
+            return Collections.emptyList();
+        }
+        final String q = query == null ? "" : query.toLowerCase(Locale.ENGLISH).trim();
+        final List<SessionItem> out = new ArrayList<>();
+        Arrays.sort(list, Comparator.comparingLong(File::lastModified).reversed());
+        for (File file : list) {
+            final String preview = readFirstLines(file, 2);
+            if (!TextUtils.isEmpty(q) && !file.getName().toLowerCase(Locale.ENGLISH).contains(q)
+                    && !preview.toLowerCase(Locale.ENGLISH).contains(q)) {
+                continue;
+            }
+            final String id = GsFileUtils.getFilenameWithoutExtension(file);
+            final File attachmentDir = new File(_storage.getAttachmentsDir(), id);
+            boolean hasAudio = false;
+            boolean hasImage = false;
+            final File[] attachments = attachmentDir.listFiles();
+            if (attachments != null) {
+                for (File att : attachments) {
+                    final String ext = GsFileUtils.getFilenameExtension(att).toLowerCase(Locale.ENGLISH);
+                    if (ext.equals(".m4a") || ext.equals(".mp3") || ext.equals(".wav") || ext.equals(".ogg")) {
+                        hasAudio = true;
+                    } else if (ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".png") || ext.equals(".webp")) {
+                        hasImage = true;
+                    }
+                }
+            }
+            out.add(new SessionItem(file, file.lastModified(), preview, hasAudio, hasImage));
+        }
+        return out;
+    }
+
+    public String readContent(@NonNull File file) {
+        return GsFileUtils.readTextFile(file);
+    }
+
+    public boolean saveContent(@NonNull File file, @NonNull String content) {
+        return GsFileUtils.writeFile(file, content, null);
+    }
+
+    private String readFirstLines(File file, int maxLines) {
+        final StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            for (int i = 0; i < maxLines; i++) {
+                final String line = br.readLine();
+                if (line == null) {
+                    break;
+                }
+                if (sb.length() > 0) {
+                    sb.append("\n");
+                }
+                sb.append(line.trim());
+            }
+        } catch (Exception ignored) {
+        }
+        return sb.toString();
+    }
+}
