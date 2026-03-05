@@ -119,6 +119,8 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="saved">Saved</string>
     <string name="could_not_save_file">Could not save file</string>
     <string name="save_session">Save Session</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
     <string name="quick_tags">Quick Tags</string>
     <string name="apply_tags">Apply Tags</string>
     <string name="common_tags">Common Tags</string>
@@ -457,7 +459,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Keep both (all)</string>
     <string name="skip_all">Skip (all)</string>
     <string name="overwrite_all">Overwrite (all)</string>
-    <string name="copy_move_conflict_message">\'%s\' already exists in %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' already exists in %2$s</string>
     <string name="additional_contexts_and_projects">Additional contexts and projects</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Enter space-separated @contexts and +projects. These will always be visible at todo.txt insert dialogs.</string>
     <string name="infinite">Infinite</string>

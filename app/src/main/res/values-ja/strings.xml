@@ -403,7 +403,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">両方を保持 (すべて)</string>
     <string name="skip_all">スキップ (all)</string>
     <string name="overwrite_all">上書き (すべて)</string>
-    <string name="copy_move_conflict_message">\'%s\' はすでに %s に存在します</string>
+    <string name="copy_move_conflict_message">\'%1$s\' はすでに %2$s に存在します</string>
     <string name="additional_contexts_and_projects">追加のコンテキストとプロジェクト</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">スペースで区切られた @contexts と +projects を入力してください。これらは常に todo.txt のダイアログで表示されます。</string>
     <string name="infinite">Infinite</string>

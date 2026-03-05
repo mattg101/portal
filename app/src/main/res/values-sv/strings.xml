@@ -422,7 +422,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Behåll båda (alla)</string>
     <string name="skip_all">Hoppa över (alla)</string>
     <string name="overwrite_all">Skriv över (alla)</string>
-    <string name="copy_move_conflict_message">\'%s\' finns redan i %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' finns redan i %2$s</string>
     <string name="additional_contexts_and_projects">Ytterligare kontexter och projekt</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Skriv @kontexter och +projekt separerade av mellanslag. Dessa kommer alltid att synas på todo.txt infoga-dialogrutor.</string>
     <string name="infinite">Oändlig</string>

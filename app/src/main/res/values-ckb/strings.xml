@@ -237,5 +237,5 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">هێشتنەوەی هەردووکی (هەمووی)</string>
     <string name="skip_all">تێپەڕاندن (هەمووی)</string>
     <string name="overwrite_all">گۆڕین (هەمووی)</string>
-    <string name="copy_move_conflict_message">\'%s\' بوونی هەیە لە %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' بوونی هەیە لە %2$s</string>
 </resources>

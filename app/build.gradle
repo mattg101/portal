@@ -13,7 +13,7 @@ if (enable_plugin_kotlin) {
     apply plugin: 'kotlin-kapt'
 }
 
-rootProject.ext.version_minSdk = 18
+rootProject.ext.version_minSdk = 19
 
 // https://github.com/vsch/flexmark-java/releases
 ext.version_library_flexmark = "0.42.14"
@@ -82,6 +82,9 @@ android {
         encoding = 'UTF-8'
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        buildConfig true
     }
     namespace 'net.gsantner.markor'
     lint {

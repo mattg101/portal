@@ -427,7 +427,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Mantener ambos (todos)</string>
     <string name="skip_all">Omitir (todo)</string>
     <string name="overwrite_all">Sobrescribir (todo)</string>
-    <string name="copy_move_conflict_message">\'%s\' ya existe en %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' ya existe en %2$s</string>
     <string name="additional_contexts_and_projects">Conjuntos y proyectos adicionales</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Introduzca @contexts y +projects separados por espacios. Estos siempre serán visibles en los diálogos de inserción de todo.txt.</string>
     <string name="infinite">Infinito</string>

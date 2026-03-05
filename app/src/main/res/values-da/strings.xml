@@ -402,7 +402,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Behold begge (alle)</string>
     <string name="skip_all">Skip (alle)</string>
     <string name="overwrite_all">Overskriv (alle)</string>
-    <string name="copy_move_conflict_message">\'%s\' findes allerede i %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' findes allerede i %2$s</string>
     <string name="additional_contexts_and_projects">Yderligere sammenhænge og projekter</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Indtast mellemrumsadskilte @contexts og +projects. Disse vil altid være synlige på todo.txt indsætte dialoger.</string>
     <string name="infinite">Uendelig</string>

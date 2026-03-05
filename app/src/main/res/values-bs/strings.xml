@@ -399,7 +399,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Zadrži obje (sve)</string>
     <string name="skip_all">Preskoči (sve)</string>
     <string name="overwrite_all">Prepiši preko (sve)</string>
-    <string name="copy_move_conflict_message">\'%s\' već postoji u %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' već postoji u %2$s</string>
     <string name="additional_contexts_and_projects">Dodatni konteksti i projekti</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Unesite @kontekste i +projekte odvojene razmacima. Oni će biti uvijek vidljivi u todo.txt okvirima za unos.</string>
     <string name="infinite">Beskrajno</string>

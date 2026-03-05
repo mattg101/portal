@@ -430,7 +430,7 @@ FS yyyy MMM dd hh:mm:ss aa
     <string name="keep_both_all">לשמור את שניהם (הכל)</string>
     <string name="skip_all">דלג (על הכל)</string>
     <string name="overwrite_all">לדרוס (את הכל)</string>
-    <string name="copy_move_conflict_message">\'%s\' כבר קיים ב %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' כבר קיים ב %2$s</string>
     <string name="additional_contexts_and_projects">קונטקסטים ופרוייקטים נוספים</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">הזינו @קונטקסטים ו +פרויקטים עם רווחים בינהם. אלו תמיד יהיו זמינים בשדות כתיבה של רשימת המטלות.</string>
     <string name="infinite">אינסופי</string>

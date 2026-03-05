@@ -409,7 +409,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">هر دو پرونده حفظ شود</string>
     <string name="skip_all">Skip (all)</string>
     <string name="overwrite_all">Overwrite (all)</string>
-    <string name="copy_move_conflict_message">در %s موجود می باشد</string>
+    <string name="copy_move_conflict_message">در %1$s موجود می باشد</string>
     <string name="additional_contexts_and_projects">بعد از اینکه پرونده بارگزاری شد، موقعیت مکان‌نما در انتهای پرونده قرار بگیرد</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Enter space-separated @contexts and +projects. These will always be visible at todo.txt insert dialogs.</string>
     <string name="infinite">نامحدود</string>

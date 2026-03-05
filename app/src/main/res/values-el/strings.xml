@@ -410,7 +410,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Κρατήστε και τα δύο (όλα)</string>
     <string name="skip_all">Παράλειψη (όλα)</string>
     <string name="overwrite_all">Αντικατάσταση (όλα)</string>
-    <string name="copy_move_conflict_message">\'%s\' υπάρχει ήδη στο %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' υπάρχει ήδη στο %2$s</string>
     <string name="additional_contexts_and_projects">Πρόσθετα πλαίσια και έργα</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Εισάγετε διαχωρισμένα με κενά διαστήματα @contexts και +projects. Αυτά θα είναι πάντα ορατά στους διαλόγους εισαγωγής todo.txt.</string>
     <string name="infinite">Απεριόριστο</string>

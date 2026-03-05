@@ -414,7 +414,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Behold begge (alle)</string>
     <string name="skip_all">Hopp over (alle)</string>
     <string name="overwrite_all">Overskriv (alle)</string>
-    <string name="copy_move_conflict_message">\'%s\' eksisterer allerede i %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' eksisterer allerede i %2$s</string>
     <string name="additional_contexts_and_projects">Flere kontekster og prosjekter</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Angi områdedaterte @contexts og +projects. Disse vil alltid være synlige på todo.txt innfør dialoger.</string>
     <string name="infinite">Uendelig</string>

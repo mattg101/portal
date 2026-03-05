@@ -19,6 +19,15 @@
             android:padding="16dp"
             android:textColor="@color/primary_text"
             android:textSize="20sp" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/portal_quick_tags_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="10dp"
+            app:singleLine="false" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -60,40 +69,13 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/portal_action_media"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/image"
-                android:src="@drawable/ic_add_white_24dp"
-                app:tint="@color/dark__primary_text" />
-
-            <ImageButton
                 android:id="@+id/portal_action_mic"
                 style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:contentDescription="@string/record_audio"
                 android:src="@drawable/ic_keyboard_voice_black_24dp"
                 app:tint="@color/accent" />
-
-            <ImageButton
-                android:id="@+id/portal_action_format"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/format"
-                android:src="@drawable/ic_format_bold_black_24dp"
-                app:tint="@color/dark__primary_text" />
-
-            <ImageButton
-                android:id="@+id/portal_action_tags"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/tags"
-                android:src="@drawable/ic_new_label_black_24dp"
-                app:tint="@color/dark__primary_text" />
 
             <Space
                 android:layout_width="0dp"
@@ -108,7 +90,21 @@
                 app:backgroundTint="@color/accent"
                 app:iconTint="@color/white"
                 app:rippleColor="@color/white"
-                app:textColor="@color/white" />
+                android:textColor="@color/white" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/portal_action_media"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:contentDescription="@string/image"
+                android:src="@drawable/ic_add_white_24dp"
+                app:tint="@color/dark__primary_text" />
         </LinearLayout>
 
     </com.google.android.material.appbar.MaterialToolbar>

@@ -390,7 +390,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Mindkettő megtartása az összesnél</string>
     <string name="skip_all">Összes kihagyása</string>
     <string name="overwrite_all">Az összes felülírása</string>
-    <string name="copy_move_conflict_message">\'%s\' már létezik %s-ben</string>
+    <string name="copy_move_conflict_message">\'%1$s\' már létezik %2$s-ben</string>
     <string name="additional_contexts_and_projects">További kontextusok és projektek</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Adj hozzá szóközzel elválasztott @kontextusokat és +projekteket. Ezek mindig láthatók lesznek a todo.txt beszúrási párbeszédablakában.</string>
     <string name="infinite">Végtelen</string>

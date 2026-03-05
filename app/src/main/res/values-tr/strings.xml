@@ -427,7 +427,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">İkisini de (tümünü) tut</string>
     <string name="skip_all">Atla (tümünü)</string>
     <string name="overwrite_all">Üzerine yaz (tümünün)</string>
-    <string name="copy_move_conflict_message">\'%s\' zaten %s içinde var</string>
+    <string name="copy_move_conflict_message">\'%1$s\' zaten %2$s içinde var</string>
     <string name="additional_contexts_and_projects">Ek bağlamlar ve projeler</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Boşlukla ayrılmış @bağlamları ve +projeleri girin. Bunlar her zaman todo.txt ekleme diyaloglarında görünecektir.</string>
     <string name="infinite">Sınırsız</string>

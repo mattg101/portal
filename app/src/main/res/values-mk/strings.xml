@@ -229,7 +229,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="heading_6">Заглавје 6</string>
     <string name="created">Создадено</string>
     <string name="code_block">Блок на код</string>
-    <string name="copy_move_conflict_message">\'%s\' веќе постои во %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' веќе постои во %2$s</string>
     <string name="infinite">Безконечно</string>
     <string name="browse_by_project">Пребарај по проект</string>
     <string name="completed">Завршено</string>

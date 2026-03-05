@@ -233,7 +233,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Konservi ambaŭ (tutoj)</string>
     <string name="skip_all">Preterpasi (tutoj)</string>
     <string name="overwrite_all">Superskribi (tutoj)</string>
-    <string name="copy_move_conflict_message">\'%s\' jam ekzistas en %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' jam ekzistas en %2$s</string>
     <string name="additional_contexts_and_projects">Aldonaj kontekstoj kaj projektoj</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Enskribi @kontekstojn kaj +projektojn apartigitaj per spacetoj. Ĉi tiuj videblos ĉiufoje ĉe todo.txt enmetaj dialogoj.</string>
     <string name="infinite">Infinita</string>

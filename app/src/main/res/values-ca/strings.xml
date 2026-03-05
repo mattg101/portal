@@ -429,7 +429,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Mantén els dos (tots)</string>
     <string name="skip_all">Omet (tots)</string>
     <string name="overwrite_all">Sobreescriu (tots)</string>
-    <string name="copy_move_conflict_message">«%s» ja existeix a %s</string>
+    <string name="copy_move_conflict_message">«%1$s» ja existeix a %2$s</string>
     <string name="additional_contexts_and_projects">Contextos i projectes addicionals</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Introduïu @contextos i +projectes separats per espais. Aquests sempre seran visibles als quadres de diàleg d\'inserció del todo.txt.</string>
     <string name="infinite">Infinit</string>

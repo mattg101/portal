@@ -424,7 +424,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Залишити обидва (все)</string>
     <string name="skip_all">Пропустити (все)</string>
     <string name="overwrite_all">Перезаписати (все)</string>
-    <string name="copy_move_conflict_message">\'%s\' вже існує в %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' вже існує в %2$s</string>
     <string name="additional_contexts_and_projects">Додаткові контексти та проєкти</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Уведіть контексти, розділені пробілами і +проєкти. Вони завжди будуть видимі в todo.txt діалогах.</string>
     <string name="infinite">Нескінченно</string>

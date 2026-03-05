@@ -1,9 +1,6 @@
 package net.gsantner.markor.portal;
 
 import android.media.MediaRecorder;
-import android.media.audiofx.AcousticEchoCanceler;
-import android.media.audiofx.AutomaticGainControl;
-import android.media.audiofx.NoiseSuppressor;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
@@ -12,9 +9,6 @@ import java.io.File;
 
 public class PortalAudioRecorderController {
     private MediaRecorder _recorder;
-    private NoiseSuppressor _ns;
-    private AutomaticGainControl _agc;
-    private AcousticEchoCanceler _aec;
     private File _outFile;
     private boolean _recording;
 
@@ -33,31 +27,6 @@ public class PortalAudioRecorderController {
         recorder.setAudioSamplingRate(44100);
         recorder.setOutputFile(outFile.getAbsolutePath());
         recorder.prepare();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            try {
-                int sessionId = recorder.getAudioSessionId();
-                if (NoiseSuppressor.isAvailable()) {
-                    _ns = NoiseSuppressor.create(sessionId);
-                    if (_ns != null) {
-                        _ns.setEnabled(true);
-                    }
-                }
-                if (AutomaticGainControl.isAvailable()) {
-                    _agc = AutomaticGainControl.create(sessionId);
-                    if (_agc != null) {
-                        _agc.setEnabled(true);
-                    }
-                }
-                if (AcousticEchoCanceler.isAvailable()) {
-                    _aec = AcousticEchoCanceler.create(sessionId);
-                    if (_aec != null) {
-                        _aec.setEnabled(true);
-                    }
-                }
-            } catch (Throwable ignored) {
-            }
-        }
 
         recorder.start();
         _recorder = recorder;
@@ -82,7 +51,6 @@ public class PortalAudioRecorderController {
             }
             _recorder = null;
         }
-        releaseEffects();
         _recording = false;
         if (!keepFile && _outFile != null && _outFile.exists()) {
             //noinspection ResultOfMethodCallIgnored
@@ -109,27 +77,4 @@ public class PortalAudioRecorderController {
         return out;
     }
 
-    private void releaseEffects() {
-        try {
-            if (_ns != null) {
-                _ns.release();
-            }
-        } catch (Exception ignored) {
-        }
-        try {
-            if (_agc != null) {
-                _agc.release();
-            }
-        } catch (Exception ignored) {
-        }
-        try {
-            if (_aec != null) {
-                _aec.release();
-            }
-        } catch (Exception ignored) {
-        }
-        _ns = null;
-        _agc = null;
-        _aec = null;
-    }
 }

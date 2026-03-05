@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -49,21 +48,18 @@ public class PortalSessionRepository {
         if (!dir.isDirectory()) {
             return Collections.emptyList();
         }
-        final File[] list = dir.listFiles((d, name) -> name.endsWith(".md"));
-        if (list == null) {
-            return Collections.emptyList();
-        }
+        final List<File> list = new ArrayList<>();
+        collectMarkdownFiles(dir, list);
         final String q = query == null ? "" : query.toLowerCase(Locale.ENGLISH).trim();
         final List<SessionItem> out = new ArrayList<>();
-        Arrays.sort(list, Comparator.comparingLong(File::lastModified).reversed());
+        list.sort(Comparator.comparingLong(File::lastModified).reversed());
         for (File file : list) {
             final String preview = readFirstLines(file, 2);
             if (!TextUtils.isEmpty(q) && !file.getName().toLowerCase(Locale.ENGLISH).contains(q)
                     && !preview.toLowerCase(Locale.ENGLISH).contains(q)) {
                 continue;
             }
-            final String id = GsFileUtils.getFilenameWithoutExtension(file);
-            final File attachmentDir = new File(_storage.getAttachmentsDir(), id);
+            final File attachmentDir = new File(file.getParentFile(), "assets");
             boolean hasAudio = false;
             boolean hasImage = false;
             final File[] attachments = attachmentDir.listFiles();
@@ -80,6 +76,20 @@ public class PortalSessionRepository {
             out.add(new SessionItem(file, file.lastModified(), preview, hasAudio, hasImage));
         }
         return out;
+    }
+
+    private void collectMarkdownFiles(@NonNull File root, @NonNull List<File> out) {
+        final File[] children = root.listFiles();
+        if (children == null) {
+            return;
+        }
+        for (File child : children) {
+            if (child.isDirectory()) {
+                collectMarkdownFiles(child, out);
+            } else if (child.getName().endsWith(".md")) {
+                out.add(child);
+            }
+        }
     }
 
     public String readContent(@NonNull File file) {

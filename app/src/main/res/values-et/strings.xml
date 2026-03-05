@@ -418,7 +418,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Hoia mõlemad (kõik)</string>
     <string name="skip_all">Jäta vahele (kõik)</string>
     <string name="overwrite_all">Kirjuta üle (kõik)</string>
-    <string name="copy_move_conflict_message">\'%s\' on juba asukohas %s olemas</string>
+    <string name="copy_move_conflict_message">\'%1$s\' on juba asukohas %2$s olemas</string>
     <string name="additional_contexts_and_projects">Täiendavad valdkonnad ja ettevõtmised</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Sisesta tühikuga eraldatud @valdkonnad ja +ettevõtmised. Need on alati nähtavad faili todo.txt sisestusdialoogides.</string>
     <string name="infinite">Piiramata</string>

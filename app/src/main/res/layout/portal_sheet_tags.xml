@@ -65,6 +65,6 @@
         android:text="@string/apply_tags"
         app:backgroundTint="@color/accent"
         app:cornerRadius="22dp"
-        app:textColor="@color/white" />
+        android:textColor="@color/white" />
 
 </LinearLayout>

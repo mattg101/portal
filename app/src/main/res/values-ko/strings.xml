@@ -429,7 +429,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">둘 다 유지 (모두)</string>
     <string name="skip_all">건너뛰기 (모두)</string>
     <string name="overwrite_all">덮어쓰기 (모두)</string>
-    <string name="copy_move_conflict_message">\'%s\' 항목이 %s에 이미 있습니다</string>
+    <string name="copy_move_conflict_message">\'%1$s\' 항목이 %2$s에 이미 있습니다</string>
     <string name="additional_contexts_and_projects">문맥과 프로젝트 추가 설정</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">\@문맥과 +프로젝트를 공백 문자로 구분하여 입력합니다. todo.txt 삽입 화면에서 항상 볼 수 있습니다.</string>
     <string name="infinite">무한</string>

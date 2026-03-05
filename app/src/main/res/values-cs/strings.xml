@@ -413,7 +413,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Zachovat obojí (vše)</string>
     <string name="skip_all">Přeskočit (vše)</string>
     <string name="overwrite_all">Přepsat (vše)</string>
-    <string name="copy_move_conflict_message">\'%s\' již existuje v %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' již existuje v %2$s</string>
     <string name="additional_contexts_and_projects">Dodatečné kontexty a projekty</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Zadejte @contexty oddělené mezerou a +projects. Ty budou vždy viditelné při vkládání dialogových oken.</string>
     <string name="infinite">Nekonečný</string>

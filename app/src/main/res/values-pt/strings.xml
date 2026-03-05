@@ -429,7 +429,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Manter ambos (todos)</string>
     <string name="skip_all">Pular (todos)</string>
     <string name="overwrite_all">Sobrescrever (todos)</string>
-    <string name="copy_move_conflict_message">\'%s\' já existe em %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' já existe em %2$s</string>
     <string name="additional_contexts_and_projects">Contextos e projetos adicionais</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Insira um espaço separado por @contextos e +projetos. Estes sempre estarão visíveis em todo.txt inserindo diálogos.</string>
     <string name="infinite">Infinito</string>

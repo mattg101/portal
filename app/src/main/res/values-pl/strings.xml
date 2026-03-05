@@ -405,7 +405,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Zachowaj oba (wszystkie)</string>
     <string name="skip_all">Pomiń (wszystkie)</string>
     <string name="overwrite_all">Nadpisz (wszystkie)</string>
-    <string name="copy_move_conflict_message">\'%s\' już istnieje w %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' już istnieje w %2$s</string>
     <string name="additional_contexts_and_projects">Dodatkowe konteksty i projekty</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Wprowadź oddzielone spacjami @contexts i +projekty. Będą one zawsze widoczne w oknie dialogowym wstawiania todo.txt.</string>
     <string name="infinite">Bez ograniczeń</string>

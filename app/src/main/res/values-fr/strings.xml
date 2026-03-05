@@ -424,7 +424,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Garder les deux (tous)</string>
     <string name="skip_all">Ignorer (tous)</string>
     <string name="overwrite_all">Écraser (tous)</string>
-    <string name="copy_move_conflict_message">\'%s\' existe déjà dans %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' existe déjà dans %2$s</string>
     <string name="additional_contexts_and_projects">Contextes et projets supplémentaires</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Entrez les @contexts séparés par des espaces et +projets. Ils seront toujours visibles dans les boîtes de dialogue d\'insertion todo.txt.</string>
     <string name="infinite">Infinie</string>

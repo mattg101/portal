@@ -429,7 +429,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">Mantieni entrambi (tutti)</string>
     <string name="skip_all">Salta (Tutti)</string>
     <string name="overwrite_all">Sovrascrivi (Tutti)</string>
-    <string name="copy_move_conflict_message">\'%s\' esiste già in %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' esiste già in %2$s</string>
     <string name="additional_contexts_and_projects">Contesti e progetti aggiuntivi</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">Inserisci @contesti e +progetti separati da spazi. Essi saranno sempre visibili nelle finestre di inserimento per todo.txt.</string>
     <string name="infinite">Infinito</string>

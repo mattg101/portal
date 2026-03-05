@@ -398,7 +398,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">දෙකම තබා ගන්න (සියල්ල)</string>
     <string name="skip_all">සියල්ල මග හරින්න)</string>
     <string name="overwrite_all">උඩින් ලියන්න (සියල්ල)</string>
-    <string name="copy_move_conflict_message">\'%s\' දැනටමත් %sහි පවතී</string>
+    <string name="copy_move_conflict_message">\'%1$s\' දැනටමත් %2$sහි පවතී</string>
     <string name="additional_contexts_and_projects">අතිරේක සන්දර්භ සහ ව්යාපෘති</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">අවකාශයෙන් වෙන් කළ @සන්දර්භ සහ +ව්‍යාපෘති ඇතුළු කරන්න. මේවා සැමවිටම todo.txt ඇතුළු කිරීමේ සංවාදවල දෘශ්‍යමාන වේ.</string>
     <string name="infinite">අනන්තයි</string>

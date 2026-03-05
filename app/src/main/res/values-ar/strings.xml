@@ -426,7 +426,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="keep_both_all">الحفاظ على كلا (الكل)</string>
     <string name="skip_all">تخطي (الكل)</string>
     <string name="overwrite_all">الكتابة فوق (الكل)</string>
-    <string name="copy_move_conflict_message">\'%s\' موجود بالفعل في %s</string>
+    <string name="copy_move_conflict_message">\'%1$s\' موجود بالفعل في %2$s</string>
     <string name="additional_contexts_and_projects">سياقات ومشاريع إضافية</string>
     <string name="enter_space_seperated_contexts_and_projects_these_will">أدخل @contexts و +مشاريع. ستكون هذه دائما مرئية في todo.txt إدخال الحوار.</string>
     <string name="infinite">لانهائي</string>
