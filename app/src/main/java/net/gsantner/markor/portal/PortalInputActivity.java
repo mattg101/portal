@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -34,7 +35,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import net.gsantner.markor.R;
@@ -93,7 +93,7 @@ public class PortalInputActivity extends AppCompatActivity {
         _dateTime = findViewById(R.id.portal_datetime);
         _quickTagsGroup = findViewById(R.id.portal_quick_tags_group);
         final View bottomToolbar = findViewById(R.id.portal_bottom_toolbar);
-        final ExtendedFloatingActionButton save = findViewById(R.id.portal_save_fab);
+        final Button save = findViewById(R.id.portal_save_fab);
         final ImageButton mic = findViewById(R.id.portal_action_mic);
         final ImageButton media = findViewById(R.id.portal_action_media);
 

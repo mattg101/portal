@@ -82,14 +82,17 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
-            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            <Button
                 android:id="@+id/portal_save_fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/rounded_corner_background"
+                android:paddingLeft="18dp"
+                android:paddingTop="10dp"
+                android:paddingRight="18dp"
+                android:paddingBottom="10dp"
                 android:text="@string/save_session"
-                app:backgroundTint="@color/accent"
-                app:iconTint="@color/white"
-                app:rippleColor="@color/white"
+                android:backgroundTint="@color/accent"
                 android:textColor="@color/white" />
 
             <Space
