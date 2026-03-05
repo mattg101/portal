@@ -498,4 +498,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="capitalize_sentences">Capitalize Sentences (a note→A note)</string>
     <string name="use_tab_to_indent">Indent lines with TAB key</string>
     <string name="folder_local">Folder local</string>
+    <string name="portal_recent_crash_title">Recent crash log</string>
+    <string name="portal_copy_crash">Copy crash log</string>
+    <string name="portal_copied_crash">Crash log copied</string>
 </resources>

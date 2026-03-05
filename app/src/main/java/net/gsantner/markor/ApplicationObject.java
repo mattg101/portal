@@ -12,6 +12,7 @@ import android.webkit.WebView;
 import androidx.multidex.MultiDexApplication;
 
 import net.gsantner.markor.model.AppSettings;
+import net.gsantner.markor.portal.PortalCrashLogger;
 
 public class ApplicationObject extends MultiDexApplication {
     // Make resources not marked as unused
@@ -38,13 +39,19 @@ public class ApplicationObject extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        _app = this;
-        _appSettings = new AppSettings(getApplicationContext());
-
-        // Per https://stackoverflow.com/a/54191884/4717438
+        PortalCrashLogger.install(this);
         try {
-            new WebView(getApplicationContext());
-        } catch (Exception ignored) {
+            _app = this;
+            _appSettings = new AppSettings(getApplicationContext());
+
+            // Per https://stackoverflow.com/a/54191884/4717438
+            try {
+                new WebView(getApplicationContext());
+            } catch (Exception ignored) {
+            }
+        } catch (Throwable t) {
+            PortalCrashLogger.logThrowable(this, "ApplicationObject.onCreate", t);
+            throw t;
         }
     }
 }
