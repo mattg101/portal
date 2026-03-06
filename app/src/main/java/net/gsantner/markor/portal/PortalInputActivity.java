@@ -7,7 +7,10 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Rect;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -45,7 +48,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -92,6 +94,18 @@ public class PortalInputActivity extends AppCompatActivity {
     private final SimpleDateFormat _dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm a", Locale.getDefault());
     private final PortalAudioRecorderController _recorder = new PortalAudioRecorderController();
     private final Runnable _previewRunnable = this::refreshMarkdownPreview;
+    private final Runnable _recordPulseRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (_recordButton == null || !_recorder.isRecording()) {
+                return;
+            }
+            final float nextAlpha = _recordButton.getAlpha() < 0.85f ? 1f : 0.68f;
+            final float nextScale = _recordButton.getScaleX() < 1.04f ? 1.08f : 1f;
+            _recordButton.animate().alpha(nextAlpha).scaleX(nextScale).scaleY(nextScale).setDuration(320).start();
+            _handler.postDelayed(this, 360);
+        }
+    };
 
     private DrawerLayout _drawerRoot;
     private View _mainContent;
@@ -164,6 +178,7 @@ public class PortalInputActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         _handler.removeCallbacksAndMessages(null);
+        _handler.removeCallbacks(_recordPulseRunnable);
         if (_recorder.isRecording()) {
             _recorder.stop(false);
         }
@@ -297,6 +312,18 @@ public class PortalInputActivity extends AppCompatActivity {
         _previewWeb.getSettings().setJavaScriptEnabled(false);
         _previewWeb.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
         refreshPreviewActionState();
+        _drawerRoot.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+                _editor.clearFocus();
+                _editor.setCursorVisible(false);
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                _editor.setCursorVisible(true);
+            }
+        });
 
         final View contentRoot = findViewById(android.R.id.content);
         contentRoot.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
@@ -693,22 +720,25 @@ public class PortalInputActivity extends AppCompatActivity {
 
     private View buildAttachmentRow(@NonNull File file) {
         if (isImageFile(file)) {
-            final FrameLayout frame = new FrameLayout(this);
+            final LinearLayout frame = new LinearLayout(this);
+            frame.setOrientation(LinearLayout.HORIZONTAL);
             final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             lp.bottomMargin = 12;
             frame.setLayoutParams(lp);
 
             final ImageView preview = new ImageView(this);
-            preview.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 280));
+            final LinearLayout.LayoutParams previewParams = new LinearLayout.LayoutParams(0, 280, 1f);
+            preview.setLayoutParams(previewParams);
             preview.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            preview.setImageBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
+            preview.setImageBitmap(loadImagePreview(file));
 
             final ImageButton delete = new ImageButton(this);
-            final FrameLayout.LayoutParams deleteParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
+            final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(88, 280);
             delete.setLayoutParams(deleteParams);
             delete.setImageResource(R.drawable.ic_delete_black_24dp);
-            delete.setBackgroundColor(0xAAFFFFFF);
-            delete.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+            delete.setBackgroundColor(ContextCompat.getColor(this, R.color.accent));
+            delete.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white)));
+            delete.setScaleType(ImageView.ScaleType.CENTER);
             delete.setOnClickListener(v -> deleteAttachment(file));
 
             frame.addView(preview);
@@ -723,16 +753,21 @@ public class PortalInputActivity extends AppCompatActivity {
         row.setPadding(0, 10, 0, 10);
 
         final TextView label = new TextView(this);
-        final LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        final LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(0, 116, 1f);
         label.setLayoutParams(labelParams);
         label.setText(file.getName());
-        label.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        label.setBackgroundColor(ContextCompat.getColor(this, R.color.primary));
+        label.setGravity(Gravity.CENTER_VERTICAL);
+        label.setPadding(24, 0, 24, 0);
+        label.setTextColor(ContextCompat.getColor(this, R.color.white));
         label.setTextSize(15f);
 
         final ImageButton delete = new ImageButton(this);
+        final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(88, 116);
+        delete.setLayoutParams(deleteParams);
         delete.setImageResource(R.drawable.ic_delete_black_24dp);
-        delete.setBackgroundColor(0x00000000);
-        delete.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+        delete.setBackgroundColor(ContextCompat.getColor(this, R.color.accent));
+        delete.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white)));
         delete.setOnClickListener(v -> deleteAttachment(file));
 
         row.addView(label);
@@ -903,11 +938,13 @@ public class PortalInputActivity extends AppCompatActivity {
         final Intent i;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             i = new Intent(MediaStore.ACTION_PICK_IMAGES);
+            i.putExtra(MediaStore.EXTRA_PICK_IMAGES_MAX, 10);
             startActivityForResult(i, REQ_MEDIA_PICK);
             return;
         } else {
-            i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            i = new Intent(Intent.ACTION_GET_CONTENT);
             i.setType("image/*");
+            i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         }
         startActivityForResult(Intent.createChooser(i, getString(R.string.portal_gallery)), REQ_MEDIA_PICK);
     }
@@ -953,6 +990,11 @@ public class PortalInputActivity extends AppCompatActivity {
             _activeRecordingFile = _storage.createAudioFileForSession(_sessionFile);
             _recorder.start(_activeRecordingFile);
             _recordStartedAt = System.currentTimeMillis();
+            _handler.removeCallbacks(_recordPulseRunnable);
+            _recordButton.setAlpha(1f);
+            _recordButton.setScaleX(1f);
+            _recordButton.setScaleY(1f);
+            _handler.post(_recordPulseRunnable);
             tickRecordingStatus();
             refreshStatus();
         } catch (Exception e) {
@@ -968,6 +1010,11 @@ public class PortalInputActivity extends AppCompatActivity {
         _recorder.stop(true);
         final File recorded = _recorder.consumeOutputFile();
         _handler.removeCallbacks(_previewRunnable);
+        _handler.removeCallbacks(_recordPulseRunnable);
+        _recordButton.animate().cancel();
+        _recordButton.setAlpha(1f);
+        _recordButton.setScaleX(1f);
+        _recordButton.setScaleY(1f);
         if (recorded != null && recorded.isFile()) {
             attachAudioFile(recorded);
         }
@@ -1127,45 +1174,86 @@ public class PortalInputActivity extends AppCompatActivity {
             return;
         }
         if (requestCode == REQ_MEDIA_PICK) {
-            final Uri uri = data.getData();
-            if (uri == null) {
-                return;
-            }
             try {
-                String name = "image-" + System.currentTimeMillis() + ".jpg";
-                final Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-                if (cursor != null) {
-                    if (cursor.moveToFirst()) {
-                        final int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                        if (idx >= 0) {
-                            final String n = cursor.getString(idx);
-                            if (!TextUtils.isEmpty(n)) {
-                                name = n;
-                            }
+                if (data.getClipData() != null) {
+                    final int count = data.getClipData().getItemCount();
+                    for (int i = 0; i < count; i++) {
+                        final Uri uri = data.getClipData().getItemAt(i).getUri();
+                        if (uri != null) {
+                            copyAndAttachImageUri(uri);
                         }
                     }
-                    cursor.close();
+                } else if (data.getData() != null) {
+                    copyAndAttachImageUri(data.getData());
                 }
-                final File attachmentDir = _storage.getAttachmentDirForSession(_sessionFile);
-                final File dest = GsFileUtils.findNonConflictingDest(attachmentDir, name);
-                try (InputStream in = getContentResolver().openInputStream(uri);
-                     FileOutputStream out = new FileOutputStream(dest)) {
-                    final byte[] buffer = new byte[8192];
-                    int read;
-                    while (in != null && (read = in.read(buffer)) > 0) {
-                        out.write(buffer, 0, read);
-                    }
-                }
-                attachImageFile(dest);
             } catch (Exception e) {
                 Toast.makeText(this, R.string.error_picture_selection, Toast.LENGTH_SHORT).show();
             }
         }
     }
 
+    private void copyAndAttachImageUri(@NonNull Uri uri) throws Exception {
+        String name = "image-" + System.currentTimeMillis() + ".jpg";
+        final Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                final int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (idx >= 0) {
+                    final String n = cursor.getString(idx);
+                    if (!TextUtils.isEmpty(n)) {
+                        name = n;
+                    }
+                }
+            }
+            cursor.close();
+        }
+        final File attachmentDir = _storage.getAttachmentDirForSession(_sessionFile);
+        final File dest = GsFileUtils.findNonConflictingDest(attachmentDir, name);
+        try (InputStream in = getContentResolver().openInputStream(uri);
+             FileOutputStream out = new FileOutputStream(dest)) {
+            final byte[] buffer = new byte[8192];
+            int read;
+            while (in != null && (read = in.read(buffer)) > 0) {
+                out.write(buffer, 0, read);
+            }
+        }
+        attachImageFile(dest);
+    }
+
     private boolean isImageFile(@NonNull File file) {
         final String ext = GsFileUtils.getFilenameExtension(file).toLowerCase(Locale.ENGLISH);
         return ".jpg".equals(ext) || ".jpeg".equals(ext) || ".png".equals(ext) || ".webp".equals(ext) || ".gif".equals(ext) || ".heic".equals(ext);
+    }
+
+    @Nullable
+    private Bitmap loadImagePreview(@NonNull File file) {
+        try {
+            final BitmapFactory.Options bounds = new BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(file.getAbsolutePath(), bounds);
+            final BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inSampleSize = Math.max(1, Math.min(bounds.outWidth / 480, bounds.outHeight / 480));
+            Bitmap bmp = BitmapFactory.decodeFile(file.getAbsolutePath(), opts);
+            if (bmp == null) {
+                return null;
+            }
+            final ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+            final int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            final Matrix matrix = new Matrix();
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
+                matrix.postRotate(90f);
+            } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
+                matrix.postRotate(180f);
+            } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
+                matrix.postRotate(270f);
+            }
+            if (!matrix.isIdentity()) {
+                bmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+            }
+            return bmp;
+        } catch (Exception ignored) {
+            return BitmapFactory.decodeFile(file.getAbsolutePath());
+        }
     }
 
     @Nullable
