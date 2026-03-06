@@ -46,6 +46,51 @@
                 android:layout_marginTop="4dp"
                 android:textColor="@color/secondary_text"
                 android:textSize="13sp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_open_settings_button"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/portal_settings"
+                        android:textAllCaps="false"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_open_attachments_button"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/portal_open_attachments"
+                        android:textAllCaps="false"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_open_classification_button"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/portal_open_classification"
+                        android:textAllCaps="false"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/primary" />
+                </LinearLayout>
+            </HorizontalScrollView>
         </LinearLayout>
 
         <HorizontalScrollView

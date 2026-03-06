@@ -168,8 +168,15 @@ public class PortalInputActivity extends AppCompatActivity {
         final MaterialButton gallery = findViewById(R.id.portal_action_gallery);
         final MaterialButton save = findViewById(R.id.portal_action_save);
         final MaterialButton addCustomClassification = findViewById(R.id.portal_class_add_custom);
+        final MaterialButton openSettings = findViewById(R.id.portal_open_settings_button);
+        final MaterialButton openAttachments = findViewById(R.id.portal_open_attachments_button);
+        final MaterialButton openClassification = findViewById(R.id.portal_open_classification_button);
 
         _toolbar.setNavigationOnClickListener(v -> showSettingsDialog());
+        if (_toolbar.getNavigationIcon() != null) {
+            _toolbar.getNavigationIcon().setTint(ContextCompat.getColor(this, R.color.white));
+        }
+        _toolbar.setNavigationContentDescription(R.string.portal_settings);
         _dateTime.setOnClickListener(v -> startActivity(new Intent(this, PortalSessionBrowserActivity.class)));
 
         _editor.addTextChangedListener(new TextWatcher() {
@@ -189,6 +196,9 @@ public class PortalInputActivity extends AppCompatActivity {
         gallery.setOnClickListener(v -> openMediaPicker());
         save.setOnClickListener(v -> saveSession(true));
         addCustomClassification.setOnClickListener(v -> showAddClassificationDialog());
+        openSettings.setOnClickListener(v -> showSettingsDialog());
+        openAttachments.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.START));
+        openClassification.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.END));
 
         _previewWeb.getSettings().setJavaScriptEnabled(false);
         _previewWeb.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
@@ -307,6 +317,12 @@ public class PortalInputActivity extends AppCompatActivity {
 
     private void renderQuickTags() {
         _quickTagsGroup.removeAllViews();
+        final LinkedHashSet<String> visibleTags = new LinkedHashSet<>();
+        for (String selected : _selectedTags) {
+            if (!isClassificationTag(selected)) {
+                visibleTags.add(selected);
+            }
+        }
         final List<String> topTags = new ArrayList<>();
         for (String tag : _tagStore.getTopTags(10)) {
             if (!isClassificationTag(tag)) {
@@ -316,11 +332,13 @@ public class PortalInputActivity extends AppCompatActivity {
         if (topTags.isEmpty()) {
             topTags.addAll(DEFAULT_TAGS);
         }
+        visibleTags.addAll(topTags);
+        visibleTags.addAll(DEFAULT_TAGS);
         final int[] colors = {
                 0xFFF4E3D7, 0xFFDCE8F5, 0xFFE4F3E5, 0xFFFDE6D8, 0xFFEDE3F6
         };
-        for (int i = 0; i < topTags.size(); i++) {
-            final String tag = topTags.get(i);
+        int i = 0;
+        for (String tag : visibleTags) {
             final Chip chip = new Chip(this);
             chip.setText("#" + tag);
             chip.setCheckable(true);
@@ -329,6 +347,7 @@ public class PortalInputActivity extends AppCompatActivity {
             chip.setTextColor(0xFF1F2937);
             chip.setOnClickListener(v -> toggleTagSelection(tag));
             _quickTagsGroup.addView(chip);
+            i++;
         }
         final Chip addChip = new Chip(this);
         addChip.setText("+");

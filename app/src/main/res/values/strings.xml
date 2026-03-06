@@ -521,4 +521,5 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="portal_stop_recording">Stop %1$02d:%2$02d</string>
     <string name="portal_unclassified">Unclassified</string>
     <string name="portal_open_attachments">Open attachments</string>
+    <string name="portal_open_classification">Open classification</string>
 </resources>
