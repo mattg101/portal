@@ -354,13 +354,13 @@ public class PortalInputActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE:
                     final float moveDx = event.getRawX() - _swipeDownX;
                     final float moveDy = event.getRawY() - _swipeDownY;
-                    if (Math.abs(moveDx) > 24f && Math.abs(moveDx) > Math.abs(moveDy)) {
+                    if (Math.abs(moveDx) > 6f && Math.abs(moveDx) > Math.abs(moveDy)) {
                         if (moveDx > 0 && attachmentWidth > 0 && _attachmentDrawer != null) {
-                            final float progress = Math.min(1f, moveDx / attachmentWidth);
-                            _attachmentDrawer.setTranslationX((-attachmentWidth) + (attachmentWidth * progress));
+                            final float drag = Math.min(attachmentWidth, Math.max(36f, moveDx));
+                            _attachmentDrawer.setTranslationX(-attachmentWidth + drag);
                         } else if (moveDx < 0 && classificationWidth > 0 && _classificationDrawer != null) {
-                            final float progress = Math.min(1f, Math.abs(moveDx) / classificationWidth);
-                            _classificationDrawer.setTranslationX(classificationWidth - (classificationWidth * progress));
+                            final float drag = Math.min(classificationWidth, Math.max(36f, Math.abs(moveDx)));
+                            _classificationDrawer.setTranslationX(classificationWidth - drag);
                         }
                     }
                     return false;
