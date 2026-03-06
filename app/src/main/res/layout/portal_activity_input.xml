@@ -94,6 +94,101 @@
                         app:strokeColor="@color/primary" />
                 </LinearLayout>
             </HorizontalScrollView>
+
+            <EditText
+                android:id="@+id/portal_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@android:color/transparent"
+                android:hint="@string/portal_title_hint"
+                android:imeOptions="actionNext"
+                android:inputType="textCapSentences"
+                android:maxLines="1"
+                android:textColor="@color/primary_text"
+                android:textColorHint="@color/secondary_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <HorizontalScrollView
+                android:id="@+id/portal_format_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/portal_format_row"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_format_heading"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/portal_format_heading"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_format_bold"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/bold"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_format_italic"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/italic"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_format_bullets"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/unordered_list"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_format_numbers"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/portal_format_numbers"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_format_quote"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/portal_format_quote"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="@color/primary" />
+                </LinearLayout>
+            </HorizontalScrollView>
         </LinearLayout>
 
         <HorizontalScrollView
@@ -163,7 +258,7 @@
                 android:textSize="12sp" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal">
@@ -171,37 +266,42 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/portal_action_record"
                 style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="72dp"
+                android:layout_width="0dp"
                 android:layout_height="72dp"
+                android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/accent"
-                app:cornerRadius="24dp"
+                app:cornerRadius="0dp"
                 app:icon="@drawable/ic_keyboard_voice_black_24dp"
                 app:iconTint="@color/white" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/portal_action_camera"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="72dp"
+                android:layout_width="0dp"
                 android:layout_height="72dp"
+                android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:textColor="@color/white"
-                app:cornerRadius="24dp"
+                app:backgroundTint="@color/nord_bg_dark"
+                app:cornerRadius="0dp"
                 app:icon="@drawable/ic_photo_camera_black_24dp"
                 app:iconTint="@color/white"
-                app:strokeColor="@color/dark__secondary_text" />
+                app:strokeColor="@color/nord_fg_dark" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/portal_action_gallery"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="72dp"
+                android:layout_width="0dp"
                 android:layout_height="72dp"
+                android:layout_weight="1"
                 android:textColor="@color/white"
-                app:cornerRadius="24dp"
+                app:backgroundTint="@color/default_link_color"
+                app:cornerRadius="0dp"
                 app:icon="@drawable/ic_image_black_24dp"
                 app:iconTint="@color/white"
-                app:strokeColor="@color/dark__secondary_text" />
+                app:strokeColor="@color/light__background" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

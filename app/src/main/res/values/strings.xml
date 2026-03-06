@@ -502,6 +502,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="portal_copy_crash">Copy crash log</string>
     <string name="portal_copied_crash">Crash log copied</string>
     <string name="portal_editor_hint">Write a quick note...</string>
+    <string name="portal_title_hint">Optional title</string>
     <string name="portal_camera">Camera</string>
     <string name="portal_gallery">Gallery</string>
     <string name="portal_attachments">Attachments</string>
@@ -516,6 +517,9 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="portal_draft_folder">Draft folder</string>
     <string name="portal_draft_folder_hint">Folder to search for saved draft audio</string>
     <string name="portal_render_markdown">Rendered markdown preview</string>
+    <string name="portal_format_heading">Heading</string>
+    <string name="portal_format_numbers">Numbers</string>
+    <string name="portal_format_quote">Block text</string>
     <string name="portal_status_summary">%1$d attachments • %2$s</string>
     <string name="portal_recording_status">Recording %1$02d:%2$02d</string>
     <string name="portal_stop_recording">Stop %1$02d:%2$02d</string>

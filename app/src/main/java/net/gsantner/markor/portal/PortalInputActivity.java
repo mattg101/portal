@@ -77,8 +77,8 @@ public class PortalInputActivity extends AppCompatActivity {
     private static final int REQ_PICK_DRAFT_DIR = 1005;
     private static final int MENU_SAVE_FOLDER = 1;
     private static final int MENU_DRAFT_FOLDER = 2;
-    private static final int MENU_RENDERED_MD = 3;
-    private static final int MENU_SAVE_DRAFT = 4;
+    private static final int MENU_TOP_PREVIEW = 3;
+    private static final int MENU_TOP_SAVE_DRAFT = 4;
     private static final List<String> DEFAULT_TAGS = Arrays.asList("idea", "todo", "reference", "meeting", "experiment");
     private static final List<String> DEFAULT_CLASSIFICATIONS = Arrays.asList(
             "quick-note",
@@ -95,15 +95,18 @@ public class PortalInputActivity extends AppCompatActivity {
     private DrawerLayout _drawerRoot;
     private View _mainContent;
     private MaterialToolbar _toolbar;
+    private EditText _titleInput;
     private EditText _editor;
     private WebView _previewWeb;
     private TextView _dateTime;
     private TextView _status;
     private TextView _attachmentEmpty;
     private ChipGroup _quickTagsGroup;
+    private View _formatScroll;
     private LinearLayout _attachmentList;
     private LinearLayout _classificationList;
     private MaterialButton _recordButton;
+    private MenuItem _previewMenuItem;
 
     private PortalStorage _storage;
     private PortalSessionRepository _repo;
@@ -172,18 +175,26 @@ public class PortalInputActivity extends AppCompatActivity {
         _drawerRoot = findViewById(R.id.portal_drawer_root);
         _mainContent = findViewById(R.id.portal_main_content);
         _toolbar = findViewById(R.id.portal_top_toolbar);
+        _titleInput = findViewById(R.id.portal_title);
         _editor = findViewById(R.id.portal_editor);
         _previewWeb = findViewById(R.id.portal_preview_web);
         _dateTime = findViewById(R.id.portal_datetime);
         _status = findViewById(R.id.portal_status);
         _attachmentEmpty = findViewById(R.id.portal_attachment_empty);
         _quickTagsGroup = findViewById(R.id.portal_quick_tags_group);
+        _formatScroll = findViewById(R.id.portal_format_scroll);
         _attachmentList = findViewById(R.id.portal_attachment_list);
         _classificationList = findViewById(R.id.portal_classification_list);
         _recordButton = findViewById(R.id.portal_action_record);
 
         final MaterialButton camera = findViewById(R.id.portal_action_camera);
         final MaterialButton gallery = findViewById(R.id.portal_action_gallery);
+        final MaterialButton fmtHeading = findViewById(R.id.portal_format_heading);
+        final MaterialButton fmtBold = findViewById(R.id.portal_format_bold);
+        final MaterialButton fmtItalic = findViewById(R.id.portal_format_italic);
+        final MaterialButton fmtBullets = findViewById(R.id.portal_format_bullets);
+        final MaterialButton fmtNumbers = findViewById(R.id.portal_format_numbers);
+        final MaterialButton fmtQuote = findViewById(R.id.portal_format_quote);
         final MaterialButton addCustomClassification = findViewById(R.id.portal_class_add_custom);
         final MaterialButton openSettings = findViewById(R.id.portal_open_settings_button);
         final MaterialButton openAttachments = findViewById(R.id.portal_open_attachments_button);
@@ -191,11 +202,20 @@ public class PortalInputActivity extends AppCompatActivity {
         final View bottomToolbar = findViewById(R.id.portal_bottom_toolbar);
 
         _toolbar.getMenu().clear();
-        _toolbar.getMenu().add(Menu.NONE, MENU_SAVE_DRAFT, Menu.NONE, R.string.save)
-                .setIcon(android.R.drawable.ic_menu_save)
-                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        _previewMenuItem = _toolbar.getMenu().add(Menu.NONE, MENU_TOP_PREVIEW, Menu.NONE, R.string.portal_render_markdown);
+        _previewMenuItem.setIcon(android.R.drawable.ic_menu_view);
+        _previewMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        final MenuItem saveDraftMenuItem = _toolbar.getMenu().add(Menu.NONE, MENU_TOP_SAVE_DRAFT, Menu.NONE, R.string.save);
+        saveDraftMenuItem.setIcon(android.R.drawable.ic_menu_save);
+        saveDraftMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         _toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == MENU_SAVE_DRAFT) {
+            if (item.getItemId() == MENU_TOP_PREVIEW) {
+                _renderMarkdown = !_renderMarkdown;
+                _storage.setRenderMarkdownEnabled(_renderMarkdown);
+                applyRenderMode();
+                return true;
+            }
+            if (item.getItemId() == MENU_TOP_SAVE_DRAFT) {
                 saveSession(true);
                 return true;
             }
@@ -215,6 +235,13 @@ public class PortalInputActivity extends AppCompatActivity {
                 schedulePreviewRefresh();
             }
         });
+        _titleInput.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
+                schedulePreviewRefresh();
+            }
+        });
 
         _recordButton.setOnClickListener(v -> toggleRecordingFromMainButton());
         _recordButton.setOnLongClickListener(v -> {
@@ -227,6 +254,12 @@ public class PortalInputActivity extends AppCompatActivity {
         openSettings.setOnClickListener(this::showSettingsMenu);
         openAttachments.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.START));
         openClassification.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.END));
+        fmtHeading.setOnClickListener(v -> toggleHeadingAtSelection());
+        fmtBold.setOnClickListener(v -> wrapSelection("**", "**"));
+        fmtItalic.setOnClickListener(v -> wrapSelection("_", "_"));
+        fmtBullets.setOnClickListener(v -> prefixLines("- "));
+        fmtNumbers.setOnClickListener(v -> prefixNumberedLines());
+        fmtQuote.setOnClickListener(v -> prefixLines("> "));
         attachSwipeOpener(_mainContent);
         attachSwipeOpener(_editor);
         attachSwipeOpener(_previewWeb);
@@ -251,6 +284,7 @@ public class PortalInputActivity extends AppCompatActivity {
 
         _previewWeb.getSettings().setJavaScriptEnabled(false);
         _previewWeb.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
+        refreshPreviewActionState();
     }
 
     private void attachSwipeOpener(@Nullable View target) {
@@ -311,7 +345,9 @@ public class PortalInputActivity extends AppCompatActivity {
                 _selectedTags.add(tag);
             }
         }
-        _editor.setText(stripManagedMetadata(content));
+        final String cleaned = stripManagedMetadata(content);
+        _titleInput.setText(extractTitle(cleaned));
+        _editor.setText(stripLeadingTitle(cleaned));
         _editor.setSelection(_editor.getText().length());
     }
 
@@ -357,8 +393,10 @@ public class PortalInputActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(_classificationSlug)) {
             tags.add(toClassificationTag(_classificationSlug));
         }
+        final String title = _titleInput.getText() == null ? "" : _titleInput.getText().toString().trim();
         final String body = _editor.getText() == null ? "" : _editor.getText().toString();
-        return _tagManager.applyTags(body, tags);
+        final String withTitle = title.isEmpty() ? body : "# " + title + "\n\n" + body;
+        return _tagManager.applyTags(withTitle, tags);
     }
 
     private void refreshDateTime() {
@@ -463,6 +501,110 @@ public class PortalInputActivity extends AppCompatActivity {
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    private String extractTitle(@NonNull String body) {
+        final String trimmed = body.replaceFirst("^\\s+", "");
+        if (!trimmed.startsWith("# ")) {
+            return "";
+        }
+        final int lineEnd = trimmed.indexOf('\n');
+        if (lineEnd < 0) {
+            return trimmed.substring(2).trim();
+        }
+        return trimmed.substring(2, lineEnd).trim();
+    }
+
+    private String stripLeadingTitle(@NonNull String body) {
+        final String trimmed = body.replaceFirst("^\\s+", "");
+        if (!trimmed.startsWith("# ")) {
+            return trimmed;
+        }
+        final int firstBreak = trimmed.indexOf('\n');
+        if (firstBreak < 0) {
+            return "";
+        }
+        int start = firstBreak + 1;
+        while (start < trimmed.length() && trimmed.charAt(start) == '\n') {
+            start++;
+        }
+        return trimmed.substring(start);
+    }
+
+    private void toggleHeadingAtSelection() {
+        final Editable e = _editor.getText();
+        int start = Math.max(0, _editor.getSelectionStart());
+        while (start > 0 && e.charAt(start - 1) != '\n') {
+            start--;
+        }
+        if (e.toString().startsWith("# ", start)) {
+            e.delete(start, start + 2);
+        } else {
+            e.insert(start, "# ");
+        }
+    }
+
+    private void wrapSelection(@NonNull String prefix, @NonNull String suffix) {
+        final Editable e = _editor.getText();
+        int start = Math.max(0, _editor.getSelectionStart());
+        int end = Math.max(0, _editor.getSelectionEnd());
+        if (start > end) {
+            final int tmp = start;
+            start = end;
+            end = tmp;
+        }
+        e.insert(end, suffix);
+        e.insert(start, prefix);
+    }
+
+    private void prefixLines(@NonNull String prefix) {
+        final Editable e = _editor.getText();
+        int start = Math.max(0, _editor.getSelectionStart());
+        int end = Math.max(0, _editor.getSelectionEnd());
+        if (start > end) {
+            final int tmp = start;
+            start = end;
+            end = tmp;
+        }
+        final String selected = e.subSequence(start, end).toString();
+        if (selected.isEmpty()) {
+            e.insert(start, prefix);
+            return;
+        }
+        final String[] lines = selected.split("\\n", -1);
+        final StringBuilder out = new StringBuilder();
+        for (int i = 0; i < lines.length; i++) {
+            out.append(prefix).append(lines[i]);
+            if (i < lines.length - 1) {
+                out.append('\n');
+            }
+        }
+        e.replace(start, end, out.toString());
+    }
+
+    private void prefixNumberedLines() {
+        final Editable e = _editor.getText();
+        int start = Math.max(0, _editor.getSelectionStart());
+        int end = Math.max(0, _editor.getSelectionEnd());
+        if (start > end) {
+            final int tmp = start;
+            start = end;
+            end = tmp;
+        }
+        final String selected = e.subSequence(start, end).toString();
+        if (selected.isEmpty()) {
+            e.insert(start, "1. ");
+            return;
+        }
+        final String[] lines = selected.split("\\n", -1);
+        final StringBuilder out = new StringBuilder();
+        for (int i = 0; i < lines.length; i++) {
+            out.append(i + 1).append(". ").append(lines[i]);
+            if (i < lines.length - 1) {
+                out.append('\n');
+            }
+        }
+        e.replace(start, end, out.toString());
     }
 
     private void refreshAttachmentDrawer() {
@@ -622,10 +764,6 @@ public class PortalInputActivity extends AppCompatActivity {
         final PopupMenu menu = new PopupMenu(this, anchor, Gravity.END);
         menu.getMenu().add(Menu.NONE, MENU_SAVE_FOLDER, Menu.NONE, R.string.portal_save_folder);
         menu.getMenu().add(Menu.NONE, MENU_DRAFT_FOLDER, Menu.NONE, R.string.portal_draft_folder);
-        menu.getMenu().add(Menu.NONE, MENU_RENDERED_MD, Menu.NONE, R.string.portal_render_markdown)
-                .setCheckable(true)
-                .setChecked(_renderMarkdown);
-        menu.getMenu().add(Menu.NONE, MENU_SAVE_DRAFT, Menu.NONE, R.string.save);
         menu.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case MENU_SAVE_FOLDER:
@@ -633,15 +771,6 @@ public class PortalInputActivity extends AppCompatActivity {
                     return true;
                 case MENU_DRAFT_FOLDER:
                     openDirectoryPicker(REQ_PICK_DRAFT_DIR);
-                    return true;
-                case MENU_RENDERED_MD:
-                    _renderMarkdown = !_renderMarkdown;
-                    _storage.setRenderMarkdownEnabled(_renderMarkdown);
-                    item.setChecked(_renderMarkdown);
-                    applyRenderMode();
-                    return true;
-                case MENU_SAVE_DRAFT:
-                    saveSession(true);
                     return true;
                 default:
                     return false;
@@ -670,7 +799,20 @@ public class PortalInputActivity extends AppCompatActivity {
     private void applyRenderMode() {
         _editor.setVisibility(_renderMarkdown ? View.GONE : View.VISIBLE);
         _previewWeb.setVisibility(_renderMarkdown ? View.VISIBLE : View.GONE);
+        _titleInput.setVisibility(_renderMarkdown ? View.GONE : View.VISIBLE);
+        _formatScroll.setVisibility(_renderMarkdown ? View.GONE : View.VISIBLE);
+        refreshPreviewActionState();
         refreshMarkdownPreview();
+    }
+
+    private void refreshPreviewActionState() {
+        if (_previewMenuItem == null || _previewMenuItem.getIcon() == null) {
+            return;
+        }
+        _previewMenuItem.getIcon().setTint(ContextCompat.getColor(
+                this,
+                _renderMarkdown ? R.color.accent : R.color.white
+        ));
     }
 
     private void schedulePreviewRefresh() {
@@ -696,8 +838,15 @@ public class PortalInputActivity extends AppCompatActivity {
     }
 
     private void openMediaPicker() {
-        final Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        i.setType("image/*");
+        final Intent i;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            i = new Intent(MediaStore.ACTION_PICK_IMAGES);
+            startActivityForResult(i, REQ_MEDIA_PICK);
+            return;
+        } else {
+            i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            i.setType("image/*");
+        }
         startActivityForResult(Intent.createChooser(i, getString(R.string.portal_gallery)), REQ_MEDIA_PICK);
     }
 
