@@ -455,6 +455,7 @@ public class PortalInputActivity extends AppCompatActivity {
                 }
             }
         }
+        cleaned = stripAttachmentMarkup(cleaned);
         return cleaned.replaceFirst("^\\s+", "");
     }
 
@@ -485,7 +486,39 @@ public class PortalInputActivity extends AppCompatActivity {
         final String title = _titleInput.getText() == null ? "" : _titleInput.getText().toString().trim();
         final String body = _editor.getText() == null ? "" : _editor.getText().toString();
         final String withTitle = title.isEmpty() ? body : "# " + title + "\n\n" + body;
-        return _tagManager.applyTags(withTitle, tags);
+        final String withAttachments = withTitle + buildAttachmentMarkdown();
+        return _tagManager.applyTags(withAttachments, tags);
+    }
+
+    private String stripAttachmentMarkup(@NonNull String content) {
+        String cleaned = content.replaceAll("(?m)^!\\[[^\\]]*]\\([^\\)]*\\)\\s*$\\n?", "");
+        cleaned = cleaned.replaceAll("(?ms)^<audio\\s+src='[^']+'\\s+controls>.*?</audio>\\s*$\\n?", "");
+        return cleaned.replaceAll("\\n{3,}", "\n\n");
+    }
+
+    private String buildAttachmentMarkdown() {
+        if (_sessionFile == null) {
+            return "";
+        }
+        final File[] files = _storage.getAttachmentDirForSession(_sessionFile).listFiles();
+        if (files == null || files.length == 0) {
+            return "";
+        }
+        final List<File> sorted = new ArrayList<>(Arrays.asList(files));
+        Collections.sort(sorted, Comparator.comparing(File::getName));
+        final StringBuilder out = new StringBuilder();
+        out.append("\n\n");
+        for (File file : sorted) {
+            final String rel = _storage.relativeToSession(_sessionFile, file);
+            final String title = GsFileUtils.getFilenameWithoutExtension(file);
+            if (isImageFile(file)) {
+                out.append("![").append(title).append("](").append(rel).append(")\n\n");
+            } else {
+                out.append("<audio src='").append(rel).append("' controls><a href='").append(rel).append("'>")
+                        .append(title).append("</a></audio>\n\n");
+            }
+        }
+        return out.toString().trim().isEmpty() ? "" : out.toString();
     }
 
     private void refreshDateTime() {
@@ -538,17 +571,15 @@ public class PortalInputActivity extends AppCompatActivity {
         }
         visibleTags.addAll(topTags);
         visibleTags.addAll(DEFAULT_TAGS);
-        final int[] colors = {
-                0xFFF4E3D7, 0xFFDCE8F5, 0xFFE4F3E5, 0xFFFDE6D8, 0xFFEDE3F6
-        };
         int i = 0;
         for (String tag : visibleTags) {
             final Chip chip = new Chip(this);
             chip.setText("#" + tag);
             chip.setCheckable(true);
             chip.setChecked(_selectedTags.contains(tag));
-            chip.setChipBackgroundColor(ColorStateList.valueOf(colors[i % colors.length]));
-            chip.setTextColor(0xFF1F2937);
+            final boolean selected = _selectedTags.contains(tag);
+            chip.setChipBackgroundColor(ColorStateList.valueOf(selected ? 0xFFF04B4B : 0xFFE7E2DB));
+            chip.setTextColor(selected ? 0xFFFFFFFF : 0xFF1E2135);
             chip.setOnClickListener(v -> toggleTagSelection(tag));
             _quickTagsGroup.addView(chip);
             i++;
@@ -890,7 +921,20 @@ public class PortalInputActivity extends AppCompatActivity {
             stopRecordingAndAttach();
         }
         saveSession(true);
-        finish();
+        try {
+            _sessionFile = _repo.createSession();
+            _titleInput.setText("");
+            _editor.setText("");
+            _selectedTags.clear();
+            _classificationSlug = "";
+            refreshDateTime();
+            refreshStatus();
+            renderQuickTags();
+            refreshAttachmentDrawer();
+            refreshClassificationDrawer();
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.error_could_not_open_file, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void applyRenderMode() {

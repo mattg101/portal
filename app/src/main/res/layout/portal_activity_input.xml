@@ -89,17 +89,18 @@
                 android:id="@+id/portal_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="2dp"
                 android:background="@android:color/transparent"
                 android:hint="@string/portal_title_hint"
                 android:imeOptions="actionNext"
+                android:includeFontPadding="false"
                 android:inputType="textCapSentences"
                 android:maxLines="1"
                 android:paddingTop="0dp"
                 android:paddingBottom="0dp"
                 android:textColor="@color/primary_text"
                 android:textColorHint="@color/secondary_text"
-                android:textSize="18sp"
+                android:textSize="17sp"
                 android:textStyle="bold" />
 
             <HorizontalScrollView
@@ -247,8 +248,8 @@
 
             <View
                 android:id="@+id/portal_publish_arc"
-                android:layout_width="92dp"
-                android:layout_height="18dp"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/portal_publish_arc" />
 
