@@ -20,7 +20,6 @@
             android:layout_height="wrap_content"
             android:background="@color/primary"
             app:navigationIcon="@android:drawable/ic_menu_sort_by_size"
-            app:title="@string/app_name"
             app:titleCentered="false"
             app:titleTextColor="@color/white" />
 
