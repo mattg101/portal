@@ -13,6 +13,22 @@
         <item name="android:windowBackground">@color/dark__background</item>
     </style>
 
+    <style name="AppTheme.Portal" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/dark__background</item>
+        <item name="colorOnPrimary">@color/dark__primary_text</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryVariant">@color/accent</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor" tools:targetApi="lollipop">@color/primary</item>
+        <item name="android:navigationBarColor" tools:targetApi="lollipop">@color/primary</item>
+    </style>
+
+    <style name="AppTheme.Portal.StartupFlash" parent="AppTheme.Portal">
+        <item name="android:windowBackground">@color/dark__background</item>
+    </style>
+
     <style name="AppTheme.Unified" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <item name="android:windowActionModeOverlay">true</item>
         <item name="windowActionModeOverlay">true</item>

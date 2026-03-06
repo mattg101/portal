@@ -70,7 +70,7 @@
         <activity
             android:name=".portal.PortalEntryActivity"
             android:exported="true"
-            android:theme="@style/AppTheme.Unified.StartupFlash">
+            android:theme="@style/AppTheme.Portal.StartupFlash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -80,11 +80,13 @@
         <activity
             android:name=".portal.PortalInputActivity"
             android:exported="false"
+            android:theme="@style/AppTheme.Portal"
             android:windowSoftInputMode="stateUnchanged|adjustResize" />
 
         <activity
             android:name=".portal.PortalSessionBrowserActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/AppTheme.Portal" />
 
         <activity
             android:name=".activity.SettingsActivity"
