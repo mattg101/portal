@@ -28,68 +28,15 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingTop="14dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="8dp">
-
-            <TextView
-                android:id="@+id/portal_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/secondary_text"
-                android:textSize="13sp" />
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/portal_open_settings_button"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="10dp"
-                        android:text="@string/portal_settings"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:strokeColor="@color/primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/portal_open_attachments_button"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="10dp"
-                        android:text="@string/portal_open_attachments"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:strokeColor="@color/primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/portal_open_classification_button"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/portal_open_classification"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:strokeColor="@color/primary" />
-                </LinearLayout>
-            </HorizontalScrollView>
+            android:paddingStart="16dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="6dp">
 
             <EditText
                 android:id="@+id/portal_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
                 android:background="@android:color/transparent"
                 android:hint="@string/portal_title_hint"
                 android:imeOptions="actionNext"
@@ -107,7 +54,7 @@
                 android:id="@+id/portal_format_scroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="6dp"
                 android:scrollbars="none">
 
                 <LinearLayout
@@ -182,28 +129,78 @@
                         app:strokeColor="@color/primary" />
                 </LinearLayout>
             </HorizontalScrollView>
-        </LinearLayout>
 
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fillViewport="true"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/portal_tag_strip_bg"
-            android:scrollbars="none">
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/portal_quick_tags_group"
-                android:layout_width="wrap_content"
+            <HorizontalScrollView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="12dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="8dp"
-                app:singleLine="true" />
-        </HorizontalScrollView>
+                android:layout_marginTop="6dp"
+                android:background="@drawable/portal_tag_strip_bg"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/portal_quick_tags_group"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="8dp"
+                    app:singleLine="true" />
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/portal_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/secondary_text"
+                android:textSize="13sp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_open_settings_button"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/portal_settings"
+                        android:textAllCaps="false"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_open_attachments_button"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/portal_open_attachments"
+                        android:textAllCaps="false"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/portal_open_classification_button"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/portal_open_classification"
+                        android:textAllCaps="false"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/primary" />
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
