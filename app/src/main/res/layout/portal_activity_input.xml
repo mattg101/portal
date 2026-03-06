@@ -89,17 +89,17 @@
                 android:id="@+id/portal_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:background="@android:color/transparent"
                 android:hint="@string/portal_title_hint"
                 android:imeOptions="actionNext"
                 android:inputType="textCapSentences"
                 android:maxLines="1"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
                 android:textColor="@color/primary_text"
                 android:textColorHint="@color/secondary_text"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <HorizontalScrollView
@@ -187,15 +187,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fillViewport="true"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/portal_tag_strip_bg"
             android:scrollbars="none">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/portal_quick_tags_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingBottom="10dp"
+                android:paddingStart="12dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="8dp"
                 app:singleLine="true" />
         </HorizontalScrollView>
 
@@ -240,14 +245,19 @@
             android:paddingEnd="10dp"
             android:paddingBottom="14dp">
 
-            <TextView
-                android:id="@+id/portal_publish_hint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <View
+                android:id="@+id/portal_publish_arc"
+                android:layout_width="92dp"
+                android:layout_height="18dp"
+                android:layout_marginBottom="4dp"
+                android:background="@drawable/portal_publish_arc" />
+
+            <View
+                android:id="@+id/portal_publish_divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
                 android:layout_marginBottom="8dp"
-                android:text="@string/portal_publish_hint"
-                android:textColor="@color/dark__primary_text"
-                android:textSize="12sp" />
+                android:background="#261E2135" />
 
             <LinearLayout
                 android:layout_width="match_parent"

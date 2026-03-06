@@ -105,6 +105,9 @@ public class PortalInputActivity extends AppCompatActivity {
     private View _formatScroll;
     private LinearLayout _attachmentList;
     private LinearLayout _classificationList;
+    private View _attachmentDrawer;
+    private View _classificationDrawer;
+    private View _publishArc;
     private MaterialButton _recordButton;
     private MenuItem _previewMenuItem;
 
@@ -184,6 +187,9 @@ public class PortalInputActivity extends AppCompatActivity {
         _formatScroll = findViewById(R.id.portal_format_scroll);
         _attachmentList = findViewById(R.id.portal_attachment_list);
         _classificationList = findViewById(R.id.portal_classification_list);
+        _attachmentDrawer = findViewById(R.id.portal_attachment_drawer);
+        _classificationDrawer = findViewById(R.id.portal_classification_drawer);
+        _publishArc = findViewById(R.id.portal_publish_arc);
         _recordButton = findViewById(R.id.portal_action_record);
 
         final MaterialButton camera = findViewById(R.id.portal_action_camera);
@@ -267,16 +273,23 @@ public class PortalInputActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN:
                     _swipeDownX = event.getRawX();
                     _swipeDownY = event.getRawY();
+                    updatePublishArc(0f);
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    final float dyMove = Math.max(0f, _swipeDownY - event.getRawY());
+                    updatePublishArc(Math.min(1f, dyMove / 180f));
                     return true;
                 case MotionEvent.ACTION_UP:
                     final float dx = event.getRawX() - _swipeDownX;
                     final float dy = event.getRawY() - _swipeDownY;
+                    updatePublishArc(0f);
                     if (-dy > 120f && Math.abs(dy) > Math.abs(dx) * 1.2f) {
                         publishNote();
                         return true;
                     }
                     return Math.abs(dx) > 0 || Math.abs(dy) > 0;
                 default:
+                    updatePublishArc(0f);
                     return true;
             }
         });
@@ -300,27 +313,68 @@ public class PortalInputActivity extends AppCompatActivity {
             return;
         }
         target.setOnTouchListener((v, event) -> {
+            final int attachmentWidth = _attachmentDrawer == null ? 0 : _attachmentDrawer.getWidth();
+            final int classificationWidth = _classificationDrawer == null ? 0 : _classificationDrawer.getWidth();
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     _swipeDownX = event.getRawX();
                     _swipeDownY = event.getRawY();
+                    return false;
+                case MotionEvent.ACTION_MOVE:
+                    final float moveDx = event.getRawX() - _swipeDownX;
+                    final float moveDy = event.getRawY() - _swipeDownY;
+                    if (Math.abs(moveDx) > 24f && Math.abs(moveDx) > Math.abs(moveDy)) {
+                        if (moveDx > 0 && attachmentWidth > 0 && _attachmentDrawer != null) {
+                            final float progress = Math.min(1f, moveDx / attachmentWidth);
+                            _attachmentDrawer.setTranslationX((-attachmentWidth) + (attachmentWidth * progress));
+                        } else if (moveDx < 0 && classificationWidth > 0 && _classificationDrawer != null) {
+                            final float progress = Math.min(1f, Math.abs(moveDx) / classificationWidth);
+                            _classificationDrawer.setTranslationX(classificationWidth - (classificationWidth * progress));
+                        }
+                    }
                     return false;
                 case MotionEvent.ACTION_UP:
                     final float dx = event.getRawX() - _swipeDownX;
                     final float dy = event.getRawY() - _swipeDownY;
                     if (Math.abs(dx) > 140f && Math.abs(dx) > Math.abs(dy) * 1.4f) {
                         if (dx > 0) {
+                            if (_attachmentDrawer != null) {
+                                _attachmentDrawer.setTranslationX(0f);
+                            }
                             _drawerRoot.openDrawer(GravityCompat.START);
                         } else {
+                            if (_classificationDrawer != null) {
+                                _classificationDrawer.setTranslationX(0f);
+                            }
                             _drawerRoot.openDrawer(GravityCompat.END);
                         }
                         return true;
                     }
+                    resetDrawerTranslations();
                     return false;
                 default:
+                    resetDrawerTranslations();
                     return false;
             }
         });
+    }
+
+    private void resetDrawerTranslations() {
+        if (_attachmentDrawer != null) {
+            _attachmentDrawer.setTranslationX(0f);
+        }
+        if (_classificationDrawer != null) {
+            _classificationDrawer.setTranslationX(0f);
+        }
+    }
+
+    private void updatePublishArc(float progress) {
+        if (_publishArc == null) {
+            return;
+        }
+        _publishArc.setScaleX(1f + (progress * 0.35f));
+        _publishArc.setScaleY(1f + (progress * 0.55f));
+        _publishArc.setAlpha(0.65f + (progress * 0.35f));
     }
 
     private void resolveSessionFromIntent() {
