@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
@@ -98,7 +99,6 @@ public class PortalInputActivity extends AppCompatActivity {
     private EditText _titleInput;
     private EditText _editor;
     private WebView _previewWeb;
-    private TextView _dateTime;
     private TextView _status;
     private TextView _attachmentEmpty;
     private ChipGroup _quickTagsGroup;
@@ -136,7 +136,7 @@ public class PortalInputActivity extends AppCompatActivity {
         bindViews();
         resolveSessionFromIntent();
         loadSession();
-        _renderMarkdown = _storage.isRenderMarkdownEnabled();
+        _renderMarkdown = false;
         applyRenderMode();
         refreshDateTime();
         refreshStatus();
@@ -178,7 +178,6 @@ public class PortalInputActivity extends AppCompatActivity {
         _titleInput = findViewById(R.id.portal_title);
         _editor = findViewById(R.id.portal_editor);
         _previewWeb = findViewById(R.id.portal_preview_web);
-        _dateTime = findViewById(R.id.portal_datetime);
         _status = findViewById(R.id.portal_status);
         _attachmentEmpty = findViewById(R.id.portal_attachment_empty);
         _quickTagsGroup = findViewById(R.id.portal_quick_tags_group);
@@ -226,7 +225,7 @@ public class PortalInputActivity extends AppCompatActivity {
             _toolbar.getNavigationIcon().setTint(ContextCompat.getColor(this, R.color.white));
         }
         _toolbar.setNavigationContentDescription(R.string.portal_settings);
-        _dateTime.setOnClickListener(v -> startActivity(new Intent(this, PortalSessionBrowserActivity.class)));
+        _toolbar.setOnClickListener(v -> startActivity(new Intent(this, PortalSessionBrowserActivity.class)));
 
         _editor.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -285,6 +284,15 @@ public class PortalInputActivity extends AppCompatActivity {
         _previewWeb.getSettings().setJavaScriptEnabled(false);
         _previewWeb.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
         refreshPreviewActionState();
+
+        final View contentRoot = findViewById(android.R.id.content);
+        contentRoot.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            final Rect visible = new Rect();
+            contentRoot.getWindowVisibleDisplayFrame(visible);
+            final int heightDiff = contentRoot.getRootView().getHeight() - visible.height();
+            final boolean keyboardVisible = heightDiff > (int) (120 * getResources().getDisplayMetrics().density);
+            bottomToolbar.setVisibility(keyboardVisible ? View.GONE : View.VISIBLE);
+        });
     }
 
     private void attachSwipeOpener(@Nullable View target) {
@@ -401,9 +409,9 @@ public class PortalInputActivity extends AppCompatActivity {
 
     private void refreshDateTime() {
         if (_sessionFile != null && _sessionFile.exists()) {
-            _dateTime.setText(_dateFormat.format(new Date(_sessionFile.lastModified())));
+            _toolbar.setTitle(_dateFormat.format(new Date(_sessionFile.lastModified())));
         } else {
-            _dateTime.setText(_dateFormat.format(new Date()));
+            _toolbar.setTitle(_dateFormat.format(new Date()));
         }
     }
 

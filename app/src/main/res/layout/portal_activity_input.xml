@@ -35,18 +35,9 @@
             android:paddingBottom="8dp">
 
             <TextView
-                android:id="@+id/portal_datetime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/primary_text"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <TextView
                 android:id="@+id/portal_status"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:textColor="@color/secondary_text"
                 android:textSize="13sp" />
 
@@ -99,15 +90,17 @@
                 android:id="@+id/portal_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:background="@android:color/transparent"
                 android:hint="@string/portal_title_hint"
                 android:imeOptions="actionNext"
                 android:inputType="textCapSentences"
                 android:maxLines="1"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:textColor="@color/primary_text"
                 android:textColorHint="@color/secondary_text"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <HorizontalScrollView
@@ -269,39 +262,54 @@
                 android:layout_width="0dp"
                 android:layout_height="72dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:gravity="center"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/accent"
                 app:cornerRadius="0dp"
                 app:icon="@drawable/ic_keyboard_voice_black_24dp"
+                app:iconGravity="textTop"
                 app:iconTint="@color/white" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/portal_action_camera"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="0dp"
                 android:layout_height="72dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:gravity="center"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
                 android:textColor="@color/white"
-                app:backgroundTint="@color/nord_bg_dark"
+                app:backgroundTint="@color/primary"
                 app:cornerRadius="0dp"
                 app:icon="@drawable/ic_photo_camera_black_24dp"
+                app:iconGravity="textTop"
                 app:iconTint="@color/white"
-                app:strokeColor="@color/nord_fg_dark" />
+                app:strokeColor="@color/dark_grey"
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/portal_action_gallery"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="0dp"
                 android:layout_height="72dp"
                 android:layout_weight="1"
+                android:gravity="center"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
                 android:textColor="@color/white"
-                app:backgroundTint="@color/default_link_color"
+                app:backgroundTint="@color/grey"
                 app:cornerRadius="0dp"
                 app:icon="@drawable/ic_image_black_24dp"
+                app:iconGravity="textTop"
                 app:iconTint="@color/white"
-                app:strokeColor="@color/light__background" />
+                app:strokeColor="@color/dark_grey"
+                app:strokeWidth="1dp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
