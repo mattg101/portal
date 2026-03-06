@@ -147,79 +147,62 @@
             android:layout_height="wrap_content"
             android:background="@color/primary"
             android:gravity="center"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:paddingStart="10dp"
             android:paddingTop="10dp"
             android:paddingEnd="10dp"
             android:paddingBottom="14dp">
 
+            <TextView
+                android:id="@+id/portal_publish_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/portal_publish_hint"
+                android:textColor="@color/dark__primary_text"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/portal_action_record"
                 style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="0dp"
-                android:layout_height="88dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:text="@string/record_audio"
-                android:textAllCaps="false"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/accent"
-                app:cornerRadius="18dp"
+                app:cornerRadius="24dp"
                 app:icon="@drawable/ic_keyboard_voice_black_24dp"
-                app:iconGravity="textTop"
-                app:iconPadding="10dp"
                 app:iconTint="@color/white" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/portal_action_camera"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="88dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:text="@string/portal_camera"
-                android:textAllCaps="false"
                 android:textColor="@color/white"
-                app:cornerRadius="18dp"
+                app:cornerRadius="24dp"
                 app:icon="@drawable/ic_photo_camera_black_24dp"
-                app:iconGravity="textTop"
-                app:iconPadding="10dp"
                 app:iconTint="@color/white"
                 app:strokeColor="@color/dark__secondary_text" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/portal_action_gallery"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="88dp"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:text="@string/portal_gallery"
-                android:textAllCaps="false"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:textColor="@color/white"
-                app:cornerRadius="18dp"
+                app:cornerRadius="24dp"
                 app:icon="@drawable/ic_image_black_24dp"
-                app:iconGravity="textTop"
-                app:iconPadding="10dp"
                 app:iconTint="@color/white"
                 app:strokeColor="@color/dark__secondary_text" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/portal_action_save"
-                style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="0dp"
-                android:layout_height="88dp"
-                android:layout_weight="1"
-                android:text="@string/save_session"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/primary"
-                app:cornerRadius="18dp"
-                app:icon="@drawable/ic_attach_file_black_24dp"
-                app:iconGravity="textTop"
-                app:iconPadding="10dp"
-                app:iconTint="@color/white"
-                app:strokeColor="@color/dark__secondary_text" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

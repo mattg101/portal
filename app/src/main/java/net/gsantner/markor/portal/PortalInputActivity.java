@@ -6,22 +6,29 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -66,6 +73,12 @@ public class PortalInputActivity extends AppCompatActivity {
     private static final int REQ_MEDIA_PICK = 1001;
     private static final int REQ_RECORD_AUDIO = 1002;
     private static final int REQ_CAMERA_CAPTURE = 1003;
+    private static final int REQ_PICK_SAVE_DIR = 1004;
+    private static final int REQ_PICK_DRAFT_DIR = 1005;
+    private static final int MENU_SAVE_FOLDER = 1;
+    private static final int MENU_DRAFT_FOLDER = 2;
+    private static final int MENU_RENDERED_MD = 3;
+    private static final int MENU_SAVE_DRAFT = 4;
     private static final List<String> DEFAULT_TAGS = Arrays.asList("idea", "todo", "reference", "meeting", "experiment");
     private static final List<String> DEFAULT_CLASSIFICATIONS = Arrays.asList(
             "quick-note",
@@ -171,13 +184,24 @@ public class PortalInputActivity extends AppCompatActivity {
 
         final MaterialButton camera = findViewById(R.id.portal_action_camera);
         final MaterialButton gallery = findViewById(R.id.portal_action_gallery);
-        final MaterialButton save = findViewById(R.id.portal_action_save);
         final MaterialButton addCustomClassification = findViewById(R.id.portal_class_add_custom);
         final MaterialButton openSettings = findViewById(R.id.portal_open_settings_button);
         final MaterialButton openAttachments = findViewById(R.id.portal_open_attachments_button);
         final MaterialButton openClassification = findViewById(R.id.portal_open_classification_button);
+        final View bottomToolbar = findViewById(R.id.portal_bottom_toolbar);
 
-        _toolbar.setNavigationOnClickListener(v -> showSettingsDialog());
+        _toolbar.getMenu().clear();
+        _toolbar.getMenu().add(Menu.NONE, MENU_SAVE_DRAFT, Menu.NONE, R.string.save)
+                .setIcon(android.R.drawable.ic_menu_save)
+                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        _toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == MENU_SAVE_DRAFT) {
+                saveSession(true);
+                return true;
+            }
+            return false;
+        });
+        _toolbar.setNavigationOnClickListener(v -> showSettingsMenu(v));
         if (_toolbar.getNavigationIcon() != null) {
             _toolbar.getNavigationIcon().setTint(ContextCompat.getColor(this, R.color.white));
         }
@@ -199,15 +223,31 @@ public class PortalInputActivity extends AppCompatActivity {
         });
         camera.setOnClickListener(v -> openCameraCapture());
         gallery.setOnClickListener(v -> openMediaPicker());
-        save.setOnClickListener(v -> saveSession(true));
         addCustomClassification.setOnClickListener(v -> showAddClassificationDialog());
-        openSettings.setOnClickListener(v -> showSettingsDialog());
+        openSettings.setOnClickListener(this::showSettingsMenu);
         openAttachments.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.START));
         openClassification.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.END));
         attachSwipeOpener(_mainContent);
         attachSwipeOpener(_editor);
         attachSwipeOpener(_previewWeb);
-        attachSwipeOpener(findViewById(R.id.portal_bottom_toolbar));
+        bottomToolbar.setOnTouchListener((v, event) -> {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    _swipeDownX = event.getRawX();
+                    _swipeDownY = event.getRawY();
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    final float dx = event.getRawX() - _swipeDownX;
+                    final float dy = event.getRawY() - _swipeDownY;
+                    if (-dy > 120f && Math.abs(dy) > Math.abs(dx) * 1.2f) {
+                        publishNote();
+                        return true;
+                    }
+                    return Math.abs(dx) > 0 || Math.abs(dy) > 0;
+                default:
+                    return true;
+            }
+        });
 
         _previewWeb.getSettings().setJavaScriptEnabled(false);
         _previewWeb.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
@@ -448,6 +488,30 @@ public class PortalInputActivity extends AppCompatActivity {
     }
 
     private View buildAttachmentRow(@NonNull File file) {
+        if (isImageFile(file)) {
+            final FrameLayout frame = new FrameLayout(this);
+            final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.bottomMargin = 12;
+            frame.setLayoutParams(lp);
+
+            final ImageView preview = new ImageView(this);
+            preview.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 280));
+            preview.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            preview.setImageBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
+
+            final ImageButton delete = new ImageButton(this);
+            final FrameLayout.LayoutParams deleteParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
+            delete.setLayoutParams(deleteParams);
+            delete.setImageResource(R.drawable.ic_delete_black_24dp);
+            delete.setBackgroundColor(0xAAFFFFFF);
+            delete.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+            delete.setOnClickListener(v -> deleteAttachment(file));
+
+            frame.addView(preview);
+            frame.addView(delete);
+            return frame;
+        }
+
         final LinearLayout row = new LinearLayout(this);
         row.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         row.setGravity(Gravity.CENTER_VERTICAL);
@@ -495,6 +559,7 @@ public class PortalInputActivity extends AppCompatActivity {
     private void refreshClassificationDrawer() {
         _classificationList.removeAllViews();
         final Set<String> all = new LinkedHashSet<>(DEFAULT_CLASSIFICATIONS);
+        all.addAll(_storage.getCustomClassifications());
         if (!TextUtils.isEmpty(_classificationSlug)) {
             all.add(_classificationSlug);
         }
@@ -542,6 +607,7 @@ public class PortalInputActivity extends AppCompatActivity {
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
                     final String slug = normalizeSlug(input.getText() == null ? "" : input.getText().toString());
                     if (!slug.isEmpty()) {
+                        _storage.recordCustomClassification(slug);
                         _classificationSlug = slug;
                         refreshClassificationDrawer();
                         refreshStatus();
@@ -552,58 +618,53 @@ public class PortalInputActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showSettingsDialog() {
-        final LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(36, 24, 36, 0);
-
-        final TextView saveLabel = makeDialogLabel(getString(R.string.portal_save_folder));
-        final EditText saveInput = new EditText(this);
-        saveInput.setText(_storage.getConfiguredRootPath());
-        saveInput.setHint(getString(R.string.portal_save_folder_hint));
-
-        final TextView draftLabel = makeDialogLabel(getString(R.string.portal_draft_folder));
-        final EditText draftInput = new EditText(this);
-        draftInput.setText(_storage.getConfiguredDraftPath());
-        draftInput.setHint(getString(R.string.portal_draft_folder_hint));
-
-        final SwitchCompat previewSwitch = new SwitchCompat(this);
-        previewSwitch.setText(getString(R.string.portal_render_markdown));
-        previewSwitch.setChecked(_renderMarkdown);
-
-        root.addView(saveLabel);
-        root.addView(saveInput);
-        root.addView(draftLabel);
-        root.addView(draftInput);
-        root.addView(previewSwitch);
-
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.portal_settings)
-                .setView(root)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                    _storage.setConfiguredRootPath(saveInput.getText() == null ? "" : saveInput.getText().toString());
-                    _storage.setConfiguredDraftPath(draftInput.getText() == null ? "" : draftInput.getText().toString());
-                    _storage.setRenderMarkdownEnabled(previewSwitch.isChecked());
-                    _renderMarkdown = previewSwitch.isChecked();
-                    _storage.ensureWritableRoot();
-                    _storage.ensureDraftRoot();
+    private void showSettingsMenu(@NonNull View anchor) {
+        final PopupMenu menu = new PopupMenu(this, anchor, Gravity.END);
+        menu.getMenu().add(Menu.NONE, MENU_SAVE_FOLDER, Menu.NONE, R.string.portal_save_folder);
+        menu.getMenu().add(Menu.NONE, MENU_DRAFT_FOLDER, Menu.NONE, R.string.portal_draft_folder);
+        menu.getMenu().add(Menu.NONE, MENU_RENDERED_MD, Menu.NONE, R.string.portal_render_markdown)
+                .setCheckable(true)
+                .setChecked(_renderMarkdown);
+        menu.getMenu().add(Menu.NONE, MENU_SAVE_DRAFT, Menu.NONE, R.string.save);
+        menu.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case MENU_SAVE_FOLDER:
+                    openDirectoryPicker(REQ_PICK_SAVE_DIR);
+                    return true;
+                case MENU_DRAFT_FOLDER:
+                    openDirectoryPicker(REQ_PICK_DRAFT_DIR);
+                    return true;
+                case MENU_RENDERED_MD:
+                    _renderMarkdown = !_renderMarkdown;
+                    _storage.setRenderMarkdownEnabled(_renderMarkdown);
+                    item.setChecked(_renderMarkdown);
                     applyRenderMode();
-                    refreshStatus();
-                })
-                .setNeutralButton(R.string.portal_open_attachments, (dialog, which) -> _drawerRoot.openDrawer(GravityCompat.START))
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+                    return true;
+                case MENU_SAVE_DRAFT:
+                    saveSession(true);
+                    return true;
+                default:
+                    return false;
+            }
+        });
+        menu.show();
     }
 
-    private TextView makeDialogLabel(String text) {
-        final TextView tv = new TextView(this);
-        final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.topMargin = 12;
-        tv.setLayoutParams(lp);
-        tv.setText(text);
-        tv.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
-        tv.setTextSize(14f);
-        return tv;
+    private void openDirectoryPicker(int requestCode) {
+        final Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+        startActivityForResult(intent, requestCode);
+    }
+
+    private void publishNote() {
+        if (_recorder.isRecording()) {
+            stopRecordingAndAttach();
+        }
+        saveSession(true);
+        finish();
     }
 
     private void applyRenderMode() {
@@ -716,14 +777,13 @@ public class PortalInputActivity extends AppCompatActivity {
         if (_recordButton == null) {
             return;
         }
+        _recordButton.setText("");
         if (_recorder.isRecording()) {
-            final long elapsed = Math.max(0, System.currentTimeMillis() - _recordStartedAt);
-            final long sec = elapsed / 1000;
-            _recordButton.setText(getString(R.string.portal_stop_recording, sec / 60, sec % 60));
             _recordButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+            _recordButton.setContentDescription(getString(R.string.portal_stop_recording_accessibility));
         } else {
-            _recordButton.setText(getString(R.string.record_audio));
             _recordButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+            _recordButton.setContentDescription(getString(R.string.record_audio));
         }
     }
 
@@ -822,6 +882,23 @@ public class PortalInputActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_PICK_SAVE_DIR || requestCode == REQ_PICK_DRAFT_DIR) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                final String path = resolveTreeUriToPath(data.getData());
+                if (!TextUtils.isEmpty(path)) {
+                    if (requestCode == REQ_PICK_SAVE_DIR) {
+                        _storage.setConfiguredRootPath(path);
+                        _storage.ensureWritableRoot();
+                    } else {
+                        _storage.setConfiguredDraftPath(path);
+                        _storage.ensureDraftRoot();
+                    }
+                    refreshStatus();
+                    Toast.makeText(this, path, Toast.LENGTH_LONG).show();
+                }
+            }
+            return;
+        }
         if (_sessionFile == null) {
             return;
         }
@@ -873,6 +950,33 @@ public class PortalInputActivity extends AppCompatActivity {
                 Toast.makeText(this, R.string.error_picture_selection, Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private boolean isImageFile(@NonNull File file) {
+        final String ext = GsFileUtils.getFilenameExtension(file).toLowerCase(Locale.ENGLISH);
+        return ".jpg".equals(ext) || ".jpeg".equals(ext) || ".png".equals(ext) || ".webp".equals(ext) || ".gif".equals(ext) || ".heic".equals(ext);
+    }
+
+    @Nullable
+    private String resolveTreeUriToPath(@NonNull Uri treeUri) {
+        try {
+            final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+            if (docId.startsWith("primary:")) {
+                final String rel = docId.substring("primary:".length());
+                return new File(Environment.getExternalStorageDirectory(), rel).getAbsolutePath();
+            }
+            if (docId.startsWith("raw:")) {
+                return docId.substring("raw:".length());
+            }
+            final int split = docId.indexOf(':');
+            if (split > 0) {
+                final String volume = docId.substring(0, split);
+                final String rel = docId.substring(split + 1);
+                return new File("/storage/" + volume, rel).getAbsolutePath();
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 
     @Override

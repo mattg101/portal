@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class PortalStorage {
@@ -20,6 +21,7 @@ public class PortalStorage {
     private static final String KEY_SAVE_ROOT = "save_root_path";
     private static final String KEY_DRAFT_ROOT = "draft_root_path";
     private static final String KEY_RENDER_MARKDOWN = "render_markdown";
+    private static final String KEY_CUSTOM_CLASSIFICATIONS = "custom_classifications";
 
     private final AppSettings _appSettings;
     private final SharedPreferences _pref;
@@ -70,6 +72,20 @@ public class PortalStorage {
 
     public void setRenderMarkdownEnabled(boolean enabled) {
         _pref.edit().putBoolean(KEY_RENDER_MARKDOWN, enabled).apply();
+    }
+
+    public List<String> getCustomClassifications() {
+        final java.util.Set<String> stored = _pref.getStringSet(KEY_CUSTOM_CLASSIFICATIONS, java.util.Collections.emptySet());
+        return new java.util.ArrayList<>(stored);
+    }
+
+    public void recordCustomClassification(@NonNull String slug) {
+        final java.util.LinkedHashSet<String> next = new java.util.LinkedHashSet<>(getCustomClassifications());
+        if (slug.trim().isEmpty()) {
+            return;
+        }
+        next.add(slug.trim());
+        _pref.edit().putStringSet(KEY_CUSTOM_CLASSIFICATIONS, next).apply();
     }
 
     public File getSessionsDir() {

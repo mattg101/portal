@@ -519,7 +519,9 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="portal_status_summary">%1$d attachments • %2$s</string>
     <string name="portal_recording_status">Recording %1$02d:%2$02d</string>
     <string name="portal_stop_recording">Stop %1$02d:%2$02d</string>
+    <string name="portal_stop_recording_accessibility">Stop recording</string>
     <string name="portal_unclassified">Unclassified</string>
     <string name="portal_open_attachments">Open attachments</string>
     <string name="portal_open_classification">Open classification</string>
+    <string name="portal_publish_hint">Swipe up from the bottom to publish</string>
 </resources>
