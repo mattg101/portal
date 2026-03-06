@@ -16,6 +16,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -79,6 +80,7 @@ public class PortalInputActivity extends AppCompatActivity {
     private final Runnable _previewRunnable = this::refreshMarkdownPreview;
 
     private DrawerLayout _drawerRoot;
+    private View _mainContent;
     private MaterialToolbar _toolbar;
     private EditText _editor;
     private WebView _previewWeb;
@@ -100,6 +102,8 @@ public class PortalInputActivity extends AppCompatActivity {
     private File _activeRecordingFile;
     private long _recordStartedAt;
     private boolean _renderMarkdown;
+    private float _swipeDownX;
+    private float _swipeDownY;
     private final List<String> _selectedTags = new ArrayList<>();
     private String _classificationSlug = "";
 
@@ -153,6 +157,7 @@ public class PortalInputActivity extends AppCompatActivity {
 
     private void bindViews() {
         _drawerRoot = findViewById(R.id.portal_drawer_root);
+        _mainContent = findViewById(R.id.portal_main_content);
         _toolbar = findViewById(R.id.portal_top_toolbar);
         _editor = findViewById(R.id.portal_editor);
         _previewWeb = findViewById(R.id.portal_preview_web);
@@ -199,9 +204,41 @@ public class PortalInputActivity extends AppCompatActivity {
         openSettings.setOnClickListener(v -> showSettingsDialog());
         openAttachments.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.START));
         openClassification.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.END));
+        attachSwipeOpener(_mainContent);
+        attachSwipeOpener(_editor);
+        attachSwipeOpener(_previewWeb);
+        attachSwipeOpener(findViewById(R.id.portal_bottom_toolbar));
 
         _previewWeb.getSettings().setJavaScriptEnabled(false);
         _previewWeb.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
+    }
+
+    private void attachSwipeOpener(@Nullable View target) {
+        if (target == null) {
+            return;
+        }
+        target.setOnTouchListener((v, event) -> {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    _swipeDownX = event.getRawX();
+                    _swipeDownY = event.getRawY();
+                    return false;
+                case MotionEvent.ACTION_UP:
+                    final float dx = event.getRawX() - _swipeDownX;
+                    final float dy = event.getRawY() - _swipeDownY;
+                    if (Math.abs(dx) > 140f && Math.abs(dx) > Math.abs(dy) * 1.4f) {
+                        if (dx > 0) {
+                            _drawerRoot.openDrawer(GravityCompat.START);
+                        } else {
+                            _drawerRoot.openDrawer(GravityCompat.END);
+                        }
+                        return true;
+                    }
+                    return false;
+                default:
+                    return false;
+            }
+        });
     }
 
     private void resolveSessionFromIntent() {
