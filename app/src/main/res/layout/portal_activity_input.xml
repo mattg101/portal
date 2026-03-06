@@ -179,17 +179,6 @@
                         app:strokeColor="@color/primary" />
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/portal_open_attachments_button"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="10dp"
-                        android:text="@string/portal_open_attachments"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:strokeColor="@color/primary" />
-
-                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/portal_open_classification_button"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
@@ -230,6 +219,22 @@
                 android:layout_height="match_parent"
                 android:visibility="gone" />
         </FrameLayout>
+
+        <HorizontalScrollView
+            android:id="@+id/portal_attachment_strip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/portal_attachment_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
 
         <LinearLayout
             android:id="@+id/portal_bottom_toolbar"
@@ -319,48 +324,6 @@
                 app:strokeWidth="1dp" />
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/portal_attachment_drawer"
-        android:layout_width="320dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="@color/background"
-        android:elevation="12dp"
-        android:fitsSystemWindows="true"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/portal_attachments"
-            android:textColor="@color/primary_text"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/portal_attachment_empty"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/portal_no_attachments"
-            android:textColor="@color/secondary_text"
-            android:textSize="14sp" />
-
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="12dp"
-            android:layout_weight="1">
-
-            <LinearLayout
-                android:id="@+id/portal_attachment_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 
     <LinearLayout

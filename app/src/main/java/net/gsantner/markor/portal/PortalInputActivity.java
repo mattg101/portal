@@ -118,12 +118,11 @@ public class PortalInputActivity extends AppCompatActivity {
     private EditText _editor;
     private WebView _previewWeb;
     private TextView _status;
-    private TextView _attachmentEmpty;
     private ChipGroup _quickTagsGroup;
     private View _formatScroll;
+    private View _attachmentStrip;
     private LinearLayout _attachmentList;
     private LinearLayout _classificationList;
-    private View _attachmentDrawer;
     private View _classificationDrawer;
     private View _publishArc;
     private MaterialButton _recordButton;
@@ -201,12 +200,11 @@ public class PortalInputActivity extends AppCompatActivity {
         _editor = findViewById(R.id.portal_editor);
         _previewWeb = findViewById(R.id.portal_preview_web);
         _status = findViewById(R.id.portal_status);
-        _attachmentEmpty = findViewById(R.id.portal_attachment_empty);
         _quickTagsGroup = findViewById(R.id.portal_quick_tags_group);
         _formatScroll = findViewById(R.id.portal_format_scroll);
+        _attachmentStrip = findViewById(R.id.portal_attachment_strip);
         _attachmentList = findViewById(R.id.portal_attachment_list);
         _classificationList = findViewById(R.id.portal_classification_list);
-        _attachmentDrawer = findViewById(R.id.portal_attachment_drawer);
         _classificationDrawer = findViewById(R.id.portal_classification_drawer);
         _publishArc = findViewById(R.id.portal_publish_arc);
         _recordButton = findViewById(R.id.portal_action_record);
@@ -221,7 +219,6 @@ public class PortalInputActivity extends AppCompatActivity {
         final MaterialButton fmtQuote = findViewById(R.id.portal_format_quote);
         final MaterialButton addCustomClassification = findViewById(R.id.portal_class_add_custom);
         final MaterialButton openSettings = findViewById(R.id.portal_open_settings_button);
-        final MaterialButton openAttachments = findViewById(R.id.portal_open_attachments_button);
         final MaterialButton openClassification = findViewById(R.id.portal_open_classification_button);
         final View bottomToolbar = findViewById(R.id.portal_bottom_toolbar);
 
@@ -276,7 +273,6 @@ public class PortalInputActivity extends AppCompatActivity {
         gallery.setOnClickListener(v -> openMediaPicker());
         addCustomClassification.setOnClickListener(v -> showAddClassificationDialog());
         openSettings.setOnClickListener(this::showSettingsMenu);
-        openAttachments.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.START));
         openClassification.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.END));
         fmtHeading.setOnClickListener(v -> toggleHeadingAtSelection());
         fmtBold.setOnClickListener(v -> wrapSelection("**", "**"));
@@ -336,6 +332,7 @@ public class PortalInputActivity extends AppCompatActivity {
             final int heightDiff = contentRoot.getRootView().getHeight() - visible.height();
             final boolean keyboardVisible = heightDiff > (int) (120 * getResources().getDisplayMetrics().density);
             bottomToolbar.setVisibility(keyboardVisible ? View.GONE : View.VISIBLE);
+            _attachmentStrip.setVisibility(keyboardVisible ? View.GONE : (_attachmentList.getChildCount() > 0 ? View.VISIBLE : View.GONE));
         });
     }
 
@@ -344,7 +341,6 @@ public class PortalInputActivity extends AppCompatActivity {
             return;
         }
         target.setOnTouchListener((v, event) -> {
-            final int attachmentWidth = _attachmentDrawer == null ? 0 : _attachmentDrawer.getWidth();
             final int classificationWidth = _classificationDrawer == null ? 0 : _classificationDrawer.getWidth();
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
@@ -355,10 +351,7 @@ public class PortalInputActivity extends AppCompatActivity {
                     final float moveDx = event.getRawX() - _swipeDownX;
                     final float moveDy = event.getRawY() - _swipeDownY;
                     if (Math.abs(moveDx) > 6f && Math.abs(moveDx) > Math.abs(moveDy)) {
-                        if (moveDx > 0 && attachmentWidth > 0 && _attachmentDrawer != null) {
-                            final float drag = Math.min(attachmentWidth, Math.max(36f, moveDx));
-                            _attachmentDrawer.setTranslationX(-attachmentWidth + drag);
-                        } else if (moveDx < 0 && classificationWidth > 0 && _classificationDrawer != null) {
+                        if (moveDx < 0 && classificationWidth > 0 && _classificationDrawer != null) {
                             final float drag = Math.min(classificationWidth, Math.max(36f, Math.abs(moveDx)));
                             _classificationDrawer.setTranslationX(classificationWidth - drag);
                         }
@@ -368,18 +361,13 @@ public class PortalInputActivity extends AppCompatActivity {
                     final float dx = event.getRawX() - _swipeDownX;
                     final float dy = event.getRawY() - _swipeDownY;
                     if (Math.abs(dx) > 140f && Math.abs(dx) > Math.abs(dy) * 1.4f) {
-                        if (dx > 0) {
-                            if (_attachmentDrawer != null) {
-                                _attachmentDrawer.setTranslationX(0f);
-                            }
-                            _drawerRoot.openDrawer(GravityCompat.START);
-                        } else {
+                        if (dx < 0) {
                             if (_classificationDrawer != null) {
                                 _classificationDrawer.setTranslationX(0f);
                             }
                             _drawerRoot.openDrawer(GravityCompat.END);
+                            return true;
                         }
-                        return true;
                     }
                     resetDrawerTranslations();
                     return false;
@@ -391,9 +379,6 @@ public class PortalInputActivity extends AppCompatActivity {
     }
 
     private void resetDrawerTranslations() {
-        if (_attachmentDrawer != null) {
-            _attachmentDrawer.setTranslationX(0f);
-        }
         if (_classificationDrawer != null) {
             _classificationDrawer.setTranslationX(0f);
         }
@@ -734,17 +719,17 @@ public class PortalInputActivity extends AppCompatActivity {
     private void refreshAttachmentDrawer() {
         _attachmentList.removeAllViews();
         if (_sessionFile == null) {
-            _attachmentEmpty.setVisibility(View.VISIBLE);
+            _attachmentStrip.setVisibility(View.GONE);
             refreshStatus();
             return;
         }
         final File[] files = _storage.getAttachmentDirForSession(_sessionFile).listFiles();
         if (files == null || files.length == 0) {
-            _attachmentEmpty.setVisibility(View.VISIBLE);
+            _attachmentStrip.setVisibility(View.GONE);
             refreshStatus();
             return;
         }
-        _attachmentEmpty.setVisibility(View.GONE);
+        _attachmentStrip.setVisibility(View.VISIBLE);
         final List<File> sorted = new ArrayList<>(Arrays.asList(files));
         Collections.sort(sorted, Comparator.comparing(File::getName));
         for (File file : sorted) {
@@ -757,19 +742,19 @@ public class PortalInputActivity extends AppCompatActivity {
         if (isImageFile(file)) {
             final LinearLayout frame = new LinearLayout(this);
             frame.setOrientation(LinearLayout.HORIZONTAL);
-            final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.bottomMargin = 12;
+            final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(220, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.rightMargin = 12;
             frame.setLayoutParams(lp);
 
             final ImageView preview = new ImageView(this);
-            final LinearLayout.LayoutParams previewParams = new LinearLayout.LayoutParams(0, 280, 1f);
+            final LinearLayout.LayoutParams previewParams = new LinearLayout.LayoutParams(0, 180, 1f);
             preview.setLayoutParams(previewParams);
             preview.setScaleType(ImageView.ScaleType.CENTER_CROP);
             preview.setImageBitmap(loadImagePreview(file));
             preview.setOnClickListener(v -> showImagePreview(file));
 
             final ImageButton delete = new ImageButton(this);
-            final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(88, 280);
+            final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(72, 180);
             delete.setLayoutParams(deleteParams);
             delete.setImageResource(R.drawable.ic_delete_black_24dp);
             delete.setBackgroundColor(ContextCompat.getColor(this, R.color.accent));
@@ -783,13 +768,14 @@ public class PortalInputActivity extends AppCompatActivity {
         }
 
         final LinearLayout row = new LinearLayout(this);
-        row.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        final LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(220, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rowParams.rightMargin = 12;
+        row.setLayoutParams(rowParams);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(0, 10, 0, 10);
 
         final TextView label = new TextView(this);
-        final LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(0, 116, 1f);
+        final LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(0, 100, 1f);
         label.setLayoutParams(labelParams);
         label.setText(file.getName());
         label.setBackgroundColor(ContextCompat.getColor(this, R.color.primary));
@@ -800,7 +786,7 @@ public class PortalInputActivity extends AppCompatActivity {
         label.setOnClickListener(v -> showAudioPreview(file));
 
         final ImageButton delete = new ImageButton(this);
-        final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(88, 116);
+        final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(72, 100);
         delete.setLayoutParams(deleteParams);
         delete.setImageResource(R.drawable.ic_delete_black_24dp);
         delete.setBackgroundColor(ContextCompat.getColor(this, R.color.accent));
