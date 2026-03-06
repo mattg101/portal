@@ -3,24 +3,25 @@ package net.gsantner.markor.portal;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.content.pm.PackageManager;
-import android.media.MediaPlayer;
+import android.content.res.ColorStateList;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
+import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.SeekBar;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,16 +29,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.textfield.TextInputEditText;
 
 import net.gsantner.markor.R;
+import net.gsantner.markor.format.markdown.MarkdownTextConverter;
+import net.gsantner.opoc.util.GsContextUtils;
 import net.gsantner.opoc.util.GsFileUtils;
 
 import java.io.File;
@@ -45,22 +52,43 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class PortalInputActivity extends AppCompatActivity {
     private static final int REQ_MEDIA_PICK = 1001;
     private static final int REQ_RECORD_AUDIO = 1002;
+    private static final int REQ_CAMERA_CAPTURE = 1003;
+    private static final List<String> DEFAULT_TAGS = Arrays.asList("idea", "todo", "reference", "meeting", "experiment");
+    private static final List<String> DEFAULT_CLASSIFICATIONS = Arrays.asList(
+            "quick-note",
+            "journal-entry",
+            "project-thought",
+            "food-diary"
+    );
 
     private final Handler _handler = new Handler(Looper.getMainLooper());
     private final SimpleDateFormat _dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm a", Locale.getDefault());
+    private final PortalAudioRecorderController _recorder = new PortalAudioRecorderController();
+    private final Runnable _previewRunnable = this::refreshMarkdownPreview;
 
+    private DrawerLayout _drawerRoot;
+    private MaterialToolbar _toolbar;
     private EditText _editor;
+    private WebView _previewWeb;
     private TextView _dateTime;
+    private TextView _status;
+    private TextView _attachmentEmpty;
     private ChipGroup _quickTagsGroup;
+    private LinearLayout _attachmentList;
+    private LinearLayout _classificationList;
+    private MaterialButton _recordButton;
 
     private PortalStorage _storage;
     private PortalSessionRepository _repo;
@@ -68,16 +96,12 @@ public class PortalInputActivity extends AppCompatActivity {
     private PortalTagStore _tagStore;
 
     private File _sessionFile;
-
-    private final PortalAudioRecorderController _recorder = new PortalAudioRecorderController();
-    private BottomSheetDialog _recorderSheet;
-    private TextView _recorderTimer;
-    private MaterialButton _recorderStartStop;
-    private MaterialButton _recorderPlay;
-    private SeekBar _recorderSeek;
-    private File _pendingAudioFile;
+    private File _pendingCameraFile;
+    private File _activeRecordingFile;
     private long _recordStartedAt;
-    private MediaPlayer _previewPlayer;
+    private boolean _renderMarkdown;
+    private final List<String> _selectedTags = new ArrayList<>();
+    private String _classificationSlug = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,49 +113,20 @@ public class PortalInputActivity extends AppCompatActivity {
         _tagManager = new PortalTagManager();
         _tagStore = new PortalTagStore(this);
 
-        _editor = findViewById(R.id.portal_editor);
-        _dateTime = findViewById(R.id.portal_datetime);
-        _quickTagsGroup = findViewById(R.id.portal_quick_tags_group);
-        final View bottomToolbar = findViewById(R.id.portal_bottom_toolbar);
-        final Button save = findViewById(R.id.portal_save_fab);
-        final ImageButton mic = findViewById(R.id.portal_action_mic);
-        final ImageButton media = findViewById(R.id.portal_action_media);
-
-        save.setOnClickListener(v -> saveSession(true));
-        mic.setOnClickListener(v -> requestRecordPermissionThenShow());
-        media.setOnClickListener(v -> showAttachSheet());
-        _dateTime.setOnClickListener(v -> startActivity(new Intent(this, PortalSessionBrowserActivity.class)));
-        _dateTime.setOnLongClickListener(v -> {
-            showStorageFolderDialog();
-            return true;
-        });
-        bottomToolbar.setOnTouchListener(new View.OnTouchListener() {
-            float startY = -1f;
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_DOWN:
-                        startY = event.getY();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        if (startY > 0 && (startY - event.getY()) > 40f) {
-                            showAttachSheet();
-                            return true;
-                        }
-                        break;
-                }
-                return false;
-            }
-        });
-
+        bindViews();
         resolveSessionFromIntent();
         loadSession();
+        _renderMarkdown = _storage.isRenderMarkdownEnabled();
+        applyRenderMode();
         refreshDateTime();
+        refreshStatus();
         renderQuickTags();
+        refreshAttachmentDrawer();
+        refreshClassificationDrawer();
 
         final String action = getIntent() != null ? getIntent().getAction() : PortalActions.ACTION_TEXT;
         if (PortalActions.ACTION_AUDIO.equals(action)) {
-            _editor.post(this::requestRecordPermissionThenShow);
+            _editor.post(this::toggleRecordingFromMainButton);
         } else if (PortalActions.ACTION_MEDIA.equals(action)) {
             _editor.post(this::openMediaPicker);
         }
@@ -149,17 +144,58 @@ public class PortalInputActivity extends AppCompatActivity {
         if (_recorder.isRecording()) {
             _recorder.stop(false);
         }
-        releasePreviewPlayer();
-        if (_pendingAudioFile != null && _pendingAudioFile.exists()) {
+        if (_pendingCameraFile != null && _pendingCameraFile.exists()) {
             //noinspection ResultOfMethodCallIgnored
-            _pendingAudioFile.delete();
-            _pendingAudioFile = null;
+            _pendingCameraFile.delete();
         }
         super.onDestroy();
     }
 
+    private void bindViews() {
+        _drawerRoot = findViewById(R.id.portal_drawer_root);
+        _toolbar = findViewById(R.id.portal_top_toolbar);
+        _editor = findViewById(R.id.portal_editor);
+        _previewWeb = findViewById(R.id.portal_preview_web);
+        _dateTime = findViewById(R.id.portal_datetime);
+        _status = findViewById(R.id.portal_status);
+        _attachmentEmpty = findViewById(R.id.portal_attachment_empty);
+        _quickTagsGroup = findViewById(R.id.portal_quick_tags_group);
+        _attachmentList = findViewById(R.id.portal_attachment_list);
+        _classificationList = findViewById(R.id.portal_classification_list);
+        _recordButton = findViewById(R.id.portal_action_record);
+
+        final MaterialButton camera = findViewById(R.id.portal_action_camera);
+        final MaterialButton gallery = findViewById(R.id.portal_action_gallery);
+        final MaterialButton save = findViewById(R.id.portal_action_save);
+        final MaterialButton addCustomClassification = findViewById(R.id.portal_class_add_custom);
+
+        _toolbar.setNavigationOnClickListener(v -> showSettingsDialog());
+        _dateTime.setOnClickListener(v -> startActivity(new Intent(this, PortalSessionBrowserActivity.class)));
+
+        _editor.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
+                schedulePreviewRefresh();
+            }
+        });
+
+        _recordButton.setOnClickListener(v -> toggleRecordingFromMainButton());
+        _recordButton.setOnLongClickListener(v -> {
+            showDraftAudioPicker();
+            return true;
+        });
+        camera.setOnClickListener(v -> openCameraCapture());
+        gallery.setOnClickListener(v -> openMediaPicker());
+        save.setOnClickListener(v -> saveSession(true));
+        addCustomClassification.setOnClickListener(v -> showAddClassificationDialog());
+
+        _previewWeb.getSettings().setJavaScriptEnabled(false);
+        _previewWeb.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
+    }
+
     private void resolveSessionFromIntent() {
-        String path = getIntent() != null ? getIntent().getStringExtra(PortalActions.EXTRA_SESSION_PATH) : null;
+        final String path = getIntent() != null ? getIntent().getStringExtra(PortalActions.EXTRA_SESSION_PATH) : null;
         File session = (path != null) ? new File(path) : null;
         if (session == null || !session.exists()) {
             try {
@@ -171,72 +207,512 @@ public class PortalInputActivity extends AppCompatActivity {
             }
         }
         _sessionFile = session;
-        setTitle(session.getName());
     }
 
     private void loadSession() {
-        if (_sessionFile != null && _sessionFile.isFile()) {
-            _editor.setText(_repo.readContent(_sessionFile));
-            _editor.setSelection(_editor.getText().length());
+        if (_sessionFile == null || !_sessionFile.isFile()) {
+            return;
         }
+        final String content = _repo.readContent(_sessionFile);
+        final List<String> parsedTags = _tagManager.parseAllTags(content);
+        _selectedTags.clear();
+        _classificationSlug = "";
+        for (String tag : parsedTags) {
+            if (isClassificationTag(tag)) {
+                _classificationSlug = toClassificationSlug(tag);
+            } else {
+                _selectedTags.add(tag);
+            }
+        }
+        _editor.setText(stripManagedMetadata(content));
+        _editor.setSelection(_editor.getText().length());
+    }
+
+    private String stripManagedMetadata(@NonNull String content) {
+        String cleaned = content.replaceAll("(?m)^Tags:\\s*(?:#[a-zA-Z0-9_-]+\\s*)*$\\n?", "");
+        if (cleaned.startsWith("---\n")) {
+            final int end = cleaned.indexOf("\n---", 4);
+            if (end > 0) {
+                String frontMatter = cleaned.substring(4, end).replaceAll("(?m)^tags:.*$\\n?", "").trim();
+                final int contentStart = cleaned.indexOf('\n', end + 1);
+                final String remainder = contentStart >= 0 ? cleaned.substring(contentStart + 1) : "";
+                if (frontMatter.isEmpty()) {
+                    cleaned = remainder;
+                } else {
+                    cleaned = "---\n" + frontMatter + "\n---\n\n" + remainder;
+                }
+            }
+        }
+        return cleaned.replaceFirst("^\\s+", "");
     }
 
     private void saveSession(boolean notify) {
         if (_sessionFile == null) {
             return;
         }
-        final String text = _editor.getText() == null ? "" : _editor.getText().toString();
-        final boolean ok = _repo.saveContent(_sessionFile, text);
+        final String content = buildContentForSave();
+        final boolean ok = _repo.saveContent(_sessionFile, content);
+        if (ok) {
+            final List<String> usedTags = new ArrayList<>(_selectedTags);
+            if (!TextUtils.isEmpty(_classificationSlug)) {
+                usedTags.add(toClassificationTag(_classificationSlug));
+            }
+            _tagStore.recordTagUse(usedTags);
+            refreshAttachmentDrawer();
+        }
         if (notify) {
             Toast.makeText(this, ok ? R.string.saved : R.string.could_not_save_file, Toast.LENGTH_SHORT).show();
         }
     }
 
+    private String buildContentForSave() {
+        final List<String> tags = new ArrayList<>(new LinkedHashSet<>(_selectedTags));
+        if (!TextUtils.isEmpty(_classificationSlug)) {
+            tags.add(toClassificationTag(_classificationSlug));
+        }
+        final String body = _editor.getText() == null ? "" : _editor.getText().toString();
+        return _tagManager.applyTags(body, tags);
+    }
+
     private void refreshDateTime() {
-        _dateTime.setText(_dateFormat.format(new Date()));
+        if (_sessionFile != null && _sessionFile.exists()) {
+            _dateTime.setText(_dateFormat.format(new Date(_sessionFile.lastModified())));
+        } else {
+            _dateTime.setText(_dateFormat.format(new Date()));
+        }
+    }
+
+    private void refreshStatus() {
+        final int attachmentCount = countAttachments();
+        final String classification = TextUtils.isEmpty(_classificationSlug)
+                ? getString(R.string.portal_unclassified)
+                : humanizeSlug(_classificationSlug);
+        if (_recorder.isRecording()) {
+            final long elapsed = Math.max(0, System.currentTimeMillis() - _recordStartedAt);
+            final long sec = elapsed / 1000;
+            _status.setText(getString(R.string.portal_recording_status, sec / 60, sec % 60));
+        } else {
+            _status.setText(getString(R.string.portal_status_summary, attachmentCount, classification));
+        }
+        updateRecordButtonState();
+    }
+
+    private int countAttachments() {
+        if (_sessionFile == null) {
+            return 0;
+        }
+        final File[] files = _storage.getAttachmentDirForSession(_sessionFile).listFiles();
+        return files == null ? 0 : files.length;
+    }
+
+    private void renderQuickTags() {
+        _quickTagsGroup.removeAllViews();
+        final List<String> topTags = new ArrayList<>();
+        for (String tag : _tagStore.getTopTags(10)) {
+            if (!isClassificationTag(tag)) {
+                topTags.add(tag);
+            }
+        }
+        if (topTags.isEmpty()) {
+            topTags.addAll(DEFAULT_TAGS);
+        }
+        final int[] colors = {
+                0xFFF4E3D7, 0xFFDCE8F5, 0xFFE4F3E5, 0xFFFDE6D8, 0xFFEDE3F6
+        };
+        for (int i = 0; i < topTags.size(); i++) {
+            final String tag = topTags.get(i);
+            final Chip chip = new Chip(this);
+            chip.setText("#" + tag);
+            chip.setCheckable(true);
+            chip.setChecked(_selectedTags.contains(tag));
+            chip.setChipBackgroundColor(ColorStateList.valueOf(colors[i % colors.length]));
+            chip.setTextColor(0xFF1F2937);
+            chip.setOnClickListener(v -> toggleTagSelection(tag));
+            _quickTagsGroup.addView(chip);
+        }
+        final Chip addChip = new Chip(this);
+        addChip.setText("+");
+        addChip.setChipBackgroundColor(ColorStateList.valueOf(0xFF1E2135));
+        addChip.setTextColor(0xFFFFFFFF);
+        addChip.setOnClickListener(v -> showAddTagDialog());
+        _quickTagsGroup.addView(addChip);
+    }
+
+    private void toggleTagSelection(@NonNull String tag) {
+        if (_selectedTags.contains(tag)) {
+            _selectedTags.remove(tag);
+        } else {
+            _selectedTags.add(tag);
+        }
+        renderQuickTags();
+        schedulePreviewRefresh();
+    }
+
+    private void showAddTagDialog() {
+        final EditText input = new EditText(this);
+        input.setHint(getString(R.string.portal_add_tag_hint));
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.tags)
+                .setView(input)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    final List<String> normalized = _tagManager.normalize(Collections.singletonList(input.getText() == null ? "" : input.getText().toString()));
+                    if (!normalized.isEmpty()) {
+                        final String tag = normalized.get(0);
+                        if (!isClassificationTag(tag) && !_selectedTags.contains(tag)) {
+                            _selectedTags.add(tag);
+                            renderQuickTags();
+                            schedulePreviewRefresh();
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void refreshAttachmentDrawer() {
+        _attachmentList.removeAllViews();
+        if (_sessionFile == null) {
+            _attachmentEmpty.setVisibility(View.VISIBLE);
+            refreshStatus();
+            return;
+        }
+        final File[] files = _storage.getAttachmentDirForSession(_sessionFile).listFiles();
+        if (files == null || files.length == 0) {
+            _attachmentEmpty.setVisibility(View.VISIBLE);
+            refreshStatus();
+            return;
+        }
+        _attachmentEmpty.setVisibility(View.GONE);
+        final List<File> sorted = new ArrayList<>(Arrays.asList(files));
+        Collections.sort(sorted, Comparator.comparing(File::getName));
+        for (File file : sorted) {
+            _attachmentList.addView(buildAttachmentRow(file));
+        }
+        refreshStatus();
+    }
+
+    private View buildAttachmentRow(@NonNull File file) {
+        final LinearLayout row = new LinearLayout(this);
+        row.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(0, 10, 0, 10);
+
+        final TextView label = new TextView(this);
+        final LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        label.setLayoutParams(labelParams);
+        label.setText(file.getName());
+        label.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        label.setTextSize(15f);
+
+        final ImageButton delete = new ImageButton(this);
+        delete.setImageResource(R.drawable.ic_delete_black_24dp);
+        delete.setBackgroundColor(0x00000000);
+        delete.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+        delete.setOnClickListener(v -> deleteAttachment(file));
+
+        row.addView(label);
+        row.addView(delete);
+        return row;
+    }
+
+    private void deleteAttachment(@NonNull File file) {
+        if (_sessionFile == null) {
+            return;
+        }
+        final String rel = _storage.relativeToSession(_sessionFile, file);
+        final String title = GsFileUtils.getFilenameWithoutExtension(file);
+        final Editable e = _editor.getText();
+        final String audioBlock = "\n<audio src='" + rel + "' controls><a href='" + rel + "'>" + title + "</a></audio>\n";
+        final String imageBlock = "\n![" + title + "](" + rel + ")\n";
+        String content = e.toString().replace(audioBlock, "\n").replace(imageBlock, "\n");
+        content = content.replace(rel, "");
+        _editor.setText(content.replaceAll("\\n{3,}", "\n\n"));
+        _editor.setSelection(_editor.getText().length());
+        //noinspection ResultOfMethodCallIgnored
+        file.delete();
+        saveSession(false);
+        refreshAttachmentDrawer();
+        schedulePreviewRefresh();
+    }
+
+    private void refreshClassificationDrawer() {
+        _classificationList.removeAllViews();
+        final Set<String> all = new LinkedHashSet<>(DEFAULT_CLASSIFICATIONS);
+        if (!TextUtils.isEmpty(_classificationSlug)) {
+            all.add(_classificationSlug);
+        }
+        for (String slug : all) {
+            _classificationList.addView(buildClassificationButton(slug));
+        }
+    }
+
+    private View buildClassificationButton(@NonNull String slug) {
+        final MaterialButton button = new MaterialButton(this);
+        final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.bottomMargin = 10;
+        button.setLayoutParams(lp);
+        button.setInsetTop(0);
+        button.setInsetBottom(0);
+        button.setText(humanizeSlug(slug));
+        button.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+        button.setCornerRadius(18);
+        final boolean selected = slug.equals(_classificationSlug);
+        if (selected) {
+            button.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+            button.setTextColor(ContextCompat.getColor(this, R.color.white));
+        } else {
+            button.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.background)));
+            button.setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
+            button.setStrokeWidth(2);
+            button.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        }
+        button.setOnClickListener(v -> {
+            _classificationSlug = slug;
+            refreshClassificationDrawer();
+            refreshStatus();
+            schedulePreviewRefresh();
+            _drawerRoot.closeDrawer(GravityCompat.END);
+        });
+        return button;
+    }
+
+    private void showAddClassificationDialog() {
+        final EditText input = new EditText(this);
+        input.setHint(getString(R.string.portal_add_classification_hint));
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.portal_add_classification)
+                .setView(input)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    final String slug = normalizeSlug(input.getText() == null ? "" : input.getText().toString());
+                    if (!slug.isEmpty()) {
+                        _classificationSlug = slug;
+                        refreshClassificationDrawer();
+                        refreshStatus();
+                        schedulePreviewRefresh();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showSettingsDialog() {
+        final LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(36, 24, 36, 0);
+
+        final TextView saveLabel = makeDialogLabel(getString(R.string.portal_save_folder));
+        final EditText saveInput = new EditText(this);
+        saveInput.setText(_storage.getConfiguredRootPath());
+        saveInput.setHint(getString(R.string.portal_save_folder_hint));
+
+        final TextView draftLabel = makeDialogLabel(getString(R.string.portal_draft_folder));
+        final EditText draftInput = new EditText(this);
+        draftInput.setText(_storage.getConfiguredDraftPath());
+        draftInput.setHint(getString(R.string.portal_draft_folder_hint));
+
+        final SwitchCompat previewSwitch = new SwitchCompat(this);
+        previewSwitch.setText(getString(R.string.portal_render_markdown));
+        previewSwitch.setChecked(_renderMarkdown);
+
+        root.addView(saveLabel);
+        root.addView(saveInput);
+        root.addView(draftLabel);
+        root.addView(draftInput);
+        root.addView(previewSwitch);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.portal_settings)
+                .setView(root)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    _storage.setConfiguredRootPath(saveInput.getText() == null ? "" : saveInput.getText().toString());
+                    _storage.setConfiguredDraftPath(draftInput.getText() == null ? "" : draftInput.getText().toString());
+                    _storage.setRenderMarkdownEnabled(previewSwitch.isChecked());
+                    _renderMarkdown = previewSwitch.isChecked();
+                    _storage.ensureWritableRoot();
+                    _storage.ensureDraftRoot();
+                    applyRenderMode();
+                    refreshStatus();
+                })
+                .setNeutralButton(R.string.portal_open_attachments, (dialog, which) -> _drawerRoot.openDrawer(GravityCompat.START))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private TextView makeDialogLabel(String text) {
+        final TextView tv = new TextView(this);
+        final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = 12;
+        tv.setLayoutParams(lp);
+        tv.setText(text);
+        tv.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        tv.setTextSize(14f);
+        return tv;
+    }
+
+    private void applyRenderMode() {
+        _editor.setVisibility(_renderMarkdown ? View.GONE : View.VISIBLE);
+        _previewWeb.setVisibility(_renderMarkdown ? View.VISIBLE : View.GONE);
+        refreshMarkdownPreview();
+    }
+
+    private void schedulePreviewRefresh() {
+        _handler.removeCallbacks(_previewRunnable);
+        _handler.postDelayed(_previewRunnable, 220);
+    }
+
+    private void refreshMarkdownPreview() {
+        if (!_renderMarkdown || _previewWeb == null || _sessionFile == null) {
+            return;
+        }
+        try {
+            final String htmlBody = MarkdownTextConverter.flexmarkRenderer.render(
+                    MarkdownTextConverter.flexmarkParser.parse(buildContentForSave())
+            );
+            final String html = "<html><head><meta name='viewport' content='width=device-width, initial-scale=1' />"
+                    + "<style>body{font-family:sans-serif;padding:18px;color:#111827;background:#EEEEEE;}img{max-width:100%;height:auto;}audio{width:100%;margin-top:16px;}pre{white-space:pre-wrap;}</style>"
+                    + "</head><body>" + htmlBody + "</body></html>";
+            final String baseUrl = _sessionFile.getParentFile() == null ? null : _sessionFile.getParentFile().toURI().toString();
+            _previewWeb.loadDataWithBaseURL(baseUrl, html, "text/html", "utf-8", null);
+        } catch (Exception ignored) {
+        }
     }
 
     private void openMediaPicker() {
-        final Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        final Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         i.setType("image/*");
-        startActivityForResult(Intent.createChooser(i, getString(R.string.image)), REQ_MEDIA_PICK);
+        startActivityForResult(Intent.createChooser(i, getString(R.string.portal_gallery)), REQ_MEDIA_PICK);
     }
 
-    private void showAttachSheet() {
-        final BottomSheetDialog sheet = new BottomSheetDialog(this);
-        final View root = LayoutInflater.from(this).inflate(R.layout.portal_sheet_attach, null, false);
-        final MaterialButton image = root.findViewById(R.id.portal_attach_image);
-        final MaterialButton audio = root.findViewById(R.id.portal_attach_audio);
-        image.setOnClickListener(v -> {
-            sheet.dismiss();
-            openMediaPicker();
-        });
-        audio.setOnClickListener(v -> {
-            sheet.dismiss();
-            showDraftAudioPicker();
-        });
-        sheet.setContentView(root);
-        sheet.show();
+    private void openCameraCapture() {
+        if (_sessionFile == null) {
+            return;
+        }
+        try {
+            _pendingCameraFile = _storage.createImageFileForSession(_sessionFile);
+            final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (intent.resolveActivity(getPackageManager()) == null) {
+                Toast.makeText(this, R.string.error_picture_selection, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            final String authority = new GsContextUtils().getFileProvider(this);
+            final Uri uri = FileProvider.getUriForFile(this, authority, _pendingCameraFile);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            startActivityForResult(intent, REQ_CAMERA_CAPTURE);
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.error_picture_selection, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void toggleRecordingFromMainButton() {
+        if (_recorder.isRecording()) {
+            stopRecordingAndAttach();
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQ_RECORD_AUDIO);
+            return;
+        }
+        startRecordingNow();
+    }
+
+    private void startRecordingNow() {
+        if (_sessionFile == null) {
+            return;
+        }
+        try {
+            _activeRecordingFile = _storage.createAudioFileForSession(_sessionFile);
+            _recorder.start(_activeRecordingFile);
+            _recordStartedAt = System.currentTimeMillis();
+            tickRecordingStatus();
+            refreshStatus();
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.record_audio, Toast.LENGTH_SHORT).show();
+            _activeRecordingFile = null;
+        }
+    }
+
+    private void stopRecordingAndAttach() {
+        if (!_recorder.isRecording()) {
+            return;
+        }
+        _recorder.stop(true);
+        final File recorded = _recorder.consumeOutputFile();
+        _handler.removeCallbacks(_previewRunnable);
+        if (recorded != null && recorded.isFile()) {
+            attachAudioFile(recorded);
+        }
+        _activeRecordingFile = null;
+        refreshStatus();
+        refreshAttachmentDrawer();
+    }
+
+    private void tickRecordingStatus() {
+        if (!_recorder.isRecording()) {
+            return;
+        }
+        refreshStatus();
+        _handler.postDelayed(this::tickRecordingStatus, 250);
+    }
+
+    private void updateRecordButtonState() {
+        if (_recordButton == null) {
+            return;
+        }
+        if (_recorder.isRecording()) {
+            final long elapsed = Math.max(0, System.currentTimeMillis() - _recordStartedAt);
+            final long sec = elapsed / 1000;
+            _recordButton.setText(getString(R.string.portal_stop_recording, sec / 60, sec % 60));
+            _recordButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+        } else {
+            _recordButton.setText(getString(R.string.record_audio));
+            _recordButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+        }
     }
 
     private void showDraftAudioPicker() {
         final List<File> allAudio = new ArrayList<>();
-        collectAudioFilesRecursive(_storage.getSessionsDir(), allAudio);
+        collectAudioFilesRecursive(_storage.getDraftRoot(), allAudio);
+        if (!_storage.getDraftRoot().equals(_storage.getSessionsDir())) {
+            collectAudioFilesRecursive(_storage.getSessionsDir(), allAudio);
+        }
         if (allAudio.isEmpty()) {
             Toast.makeText(this, R.string.empty_directory, Toast.LENGTH_SHORT).show();
             return;
         }
         Collections.sort(allAudio, Comparator.comparingLong(File::lastModified).reversed());
-        final String[] labels = new String[Math.min(50, allAudio.size())];
-        for (int i = 0; i < labels.length; i++) {
+        final int limit = Math.min(50, allAudio.size());
+        final String[] labels = new String[limit];
+        for (int i = 0; i < limit; i++) {
             final File f = allAudio.get(i);
             labels[i] = f.getName() + "  (" + new Date(f.lastModified()) + ")";
         }
         new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.audio))
-                .setItems(labels, (d, which) -> attachDraftAudioFile(allAudio.get(which)))
+                .setTitle(R.string.audio)
+                .setItems(labels, (dialog, which) -> attachDraftAudioFile(allAudio.get(which)))
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    private void collectAudioFilesRecursive(@Nullable File root, @NonNull List<File> out) {
+        if (root == null || !root.exists()) {
+            return;
+        }
+        if (root.isFile()) {
+            final String ext = GsFileUtils.getFilenameExtension(root).toLowerCase(Locale.ENGLISH);
+            if (".m4a".equals(ext) || ".mp3".equals(ext) || ".wav".equals(ext) || ".ogg".equals(ext) || ".aac".equals(ext)) {
+                out.add(root);
+            }
+            return;
+        }
+        final File[] files = root.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File child : files) {
+            collectAudioFilesRecursive(child, out);
+        }
     }
 
     private void attachDraftAudioFile(@NonNull File source) {
@@ -245,460 +721,98 @@ public class PortalInputActivity extends AppCompatActivity {
         }
         try {
             final File copied = _storage.copyIntoSessionAttachmentDir(_sessionFile, source);
-            final String rel = _storage.relativeToSession(_sessionFile, copied);
-            final String title = GsFileUtils.getFilenameWithoutExtension(copied);
-            insertAtCursor("\n<audio src='" + rel + "' controls><a href='" + rel + "'>" + title + "</a></audio>\n");
-            saveSession(false);
+            attachAudioFile(copied);
+            refreshAttachmentDrawer();
         } catch (Exception e) {
             Toast.makeText(this, R.string.error_could_not_open_file, Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void collectAudioFilesRecursive(@Nullable File root, @NonNull List<File> out) {
-        if (root == null || !root.isDirectory()) {
+    private void attachAudioFile(@NonNull File file) {
+        if (_sessionFile == null) {
             return;
         }
-        final File[] files = root.listFiles();
-        if (files == null) {
-            return;
-        }
-        for (File f : files) {
-            if (f.isDirectory()) {
-                collectAudioFilesRecursive(f, out);
-                continue;
-            }
-            final String ext = GsFileUtils.getFilenameExtension(f).toLowerCase(Locale.ENGLISH);
-            if (".m4a".equals(ext) || ".mp3".equals(ext) || ".wav".equals(ext) || ".ogg".equals(ext) || ".aac".equals(ext)) {
-                out.add(f);
-            }
-        }
-    }
-
-    private void showFormattingMenu(View anchor) {
-        androidx.appcompat.widget.PopupMenu pm = new androidx.appcompat.widget.PopupMenu(this, anchor);
-        pm.getMenu().add(0, 1, 1, getString(R.string.bold));
-        pm.getMenu().add(0, 2, 2, getString(R.string.italic));
-        pm.getMenu().add(0, 3, 3, getString(R.string.unordered_list));
-        pm.setOnMenuItemClickListener(this::onFormatMenuItem);
-        pm.show();
-    }
-
-    private boolean onFormatMenuItem(MenuItem item) {
-        switch (item.getItemId()) {
-            case 1:
-                wrapSelection("**", "**");
-                return true;
-            case 2:
-                wrapSelection("_", "_");
-                return true;
-            case 3:
-                prefixLines("- ");
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private void wrapSelection(String pre, String post) {
-        Editable e = _editor.getText();
-        int s = Math.max(0, _editor.getSelectionStart());
-        int en = Math.max(0, _editor.getSelectionEnd());
-        if (s > en) {
-            int tmp = s; s = en; en = tmp;
-        }
-        e.insert(en, post);
-        e.insert(s, pre);
-    }
-
-    private void prefixLines(String prefix) {
-        Editable e = _editor.getText();
-        int s = Math.max(0, _editor.getSelectionStart());
-        int en = Math.max(0, _editor.getSelectionEnd());
-        if (s > en) {
-            int tmp = s; s = en; en = tmp;
-        }
-        String selected = e.subSequence(s, en).toString();
-        if (TextUtils.isEmpty(selected)) {
-            e.insert(s, prefix);
-            return;
-        }
-        String[] lines = selected.split("\\n", -1);
-        StringBuilder out = new StringBuilder();
-        for (int i = 0; i < lines.length; i++) {
-            out.append(prefix).append(lines[i]);
-            if (i < lines.length - 1) {
-                out.append('\n');
-            }
-        }
-        e.replace(s, en, out.toString());
-    }
-
-    private void requestRecordPermissionThenShow() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQ_RECORD_AUDIO);
-            return;
-        }
-        showRecorderSheet();
-    }
-
-    private void showRecorderSheet() {
-        if (_recorderSheet == null) {
-            _recorderSheet = new BottomSheetDialog(this);
-            View root = LayoutInflater.from(this).inflate(R.layout.portal_sheet_recorder, null, false);
-            _recorderTimer = root.findViewById(R.id.portal_recorder_timer);
-            _recorderStartStop = root.findViewById(R.id.portal_recorder_start_stop);
-            _recorderPlay = root.findViewById(R.id.portal_recorder_play);
-            _recorderSeek = root.findViewById(R.id.portal_recorder_seek);
-            MaterialButton saveBtn = root.findViewById(R.id.portal_recorder_save);
-            MaterialButton discardBtn = root.findViewById(R.id.portal_recorder_discard);
-
-            _recorderStartStop.setOnClickListener(v -> toggleRecording());
-            _recorderPlay.setOnClickListener(v -> togglePreviewPlayback());
-            _recorderSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (fromUser && _previewPlayer != null) {
-                        _previewPlayer.seekTo(progress);
-                    }
-                }
-
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
-            });
-            saveBtn.setOnClickListener(v -> saveRecordingAndInsert());
-            discardBtn.setOnClickListener(v -> {
-                _recorder.stop(false);
-                releasePreviewPlayer();
-                _pendingAudioFile = null;
-                _recorderSheet.dismiss();
-                updateRecorderViews();
-            });
-
-            _recorderSheet.setOnDismissListener(d -> {
-                if (_recorder.isRecording()) {
-                    _recorder.stop(false);
-                }
-                releasePreviewPlayer();
-                if (_pendingAudioFile != null && _pendingAudioFile.exists()) {
-                    //noinspection ResultOfMethodCallIgnored
-                    _pendingAudioFile.delete();
-                    _pendingAudioFile = null;
-                }
-                _handler.removeCallbacksAndMessages(null);
-                updateRecorderViews();
-            });
-
-            _recorderSheet.setContentView(root);
-        }
-        updateRecorderViews();
-        _recorderSheet.show();
-    }
-
-    private void toggleRecording() {
-        if (_recorder.isRecording()) {
-            _recorder.stop(true);
-            _pendingAudioFile = _recorder.consumeOutputFile();
-            _handler.removeCallbacksAndMessages(null);
-        } else {
-            try {
-                _pendingAudioFile = _storage.createAudioFileForSession(_sessionFile);
-                _recorder.start(_pendingAudioFile);
-                _recordStartedAt = System.currentTimeMillis();
-                tickTimer();
-            } catch (Exception e) {
-                Toast.makeText(this, R.string.record_audio, Toast.LENGTH_SHORT).show();
-                _pendingAudioFile = null;
-            }
-        }
-        updateRecorderViews();
-    }
-
-    private void tickTimer() {
-        if (!_recorder.isRecording()) {
-            return;
-        }
-        final long elapsed = Math.max(0, System.currentTimeMillis() - _recordStartedAt);
-        final long sec = elapsed / 1000;
-        _recorderTimer.setText(String.format(Locale.ENGLISH, "%02d:%02d", sec / 60, sec % 60));
-        _handler.postDelayed(this::tickTimer, 250);
-    }
-
-    private void updateRecorderViews() {
-        if (_recorderStartStop == null) {
-            return;
-        }
-        _recorderStartStop.setText(_recorder.isRecording() ? R.string.stop : R.string.record_audio);
-        final boolean canPreview = !_recorder.isRecording() && _pendingAudioFile != null && _pendingAudioFile.isFile();
-        if (_recorderPlay != null) {
-            _recorderPlay.setEnabled(canPreview);
-            _recorderPlay.setText(_previewPlayer != null && _previewPlayer.isPlaying() ? R.string.pause : R.string.play);
-        }
-        if (_recorderSeek != null) {
-            _recorderSeek.setEnabled(canPreview);
-        }
-        if (!_recorder.isRecording() && _pendingAudioFile == null) {
-            _recorderTimer.setText("00:00");
-            if (_recorderSeek != null) {
-                _recorderSeek.setProgress(0);
-            }
-        }
-    }
-
-    private void saveRecordingAndInsert() {
-        if (_recorder.isRecording()) {
-            _recorder.stop(true);
-            _pendingAudioFile = _recorder.consumeOutputFile();
-        }
-        releasePreviewPlayer();
-        if (_pendingAudioFile == null || !_pendingAudioFile.isFile()) {
-            Toast.makeText(this, R.string.record_audio, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        final String rel = _storage.relativeToSession(_sessionFile, _pendingAudioFile);
-        final String title = GsFileUtils.getFilenameWithoutExtension(_pendingAudioFile);
+        final String rel = _storage.relativeToSession(_sessionFile, file);
+        final String title = GsFileUtils.getFilenameWithoutExtension(file);
         insertAtCursor("\n<audio src='" + rel + "' controls><a href='" + rel + "'>" + title + "</a></audio>\n");
-        _pendingAudioFile = null;
         saveSession(false);
-        if (_recorderSheet != null) {
-            _recorderSheet.dismiss();
-        }
     }
 
-    private void togglePreviewPlayback() {
-        if (_pendingAudioFile == null || !_pendingAudioFile.isFile()) {
+    private void attachImageFile(@NonNull File file) {
+        if (_sessionFile == null) {
             return;
         }
-        try {
-            if (_previewPlayer == null) {
-                _previewPlayer = new MediaPlayer();
-                _previewPlayer.setDataSource(_pendingAudioFile.getAbsolutePath());
-                _previewPlayer.prepare();
-                if (_recorderSeek != null) {
-                    _recorderSeek.setMax(_previewPlayer.getDuration());
-                }
-                _previewPlayer.setOnCompletionListener(mp -> {
-                    if (_recorderSeek != null) {
-                        _recorderSeek.setProgress(_recorderSeek.getMax());
-                    }
-                    updateRecorderViews();
-                });
-            }
-            if (_previewPlayer.isPlaying()) {
-                _previewPlayer.pause();
-            } else {
-                _previewPlayer.start();
-                tickPreviewSeek();
-            }
-            updateRecorderViews();
-        } catch (Exception ignored) {
-            releasePreviewPlayer();
-        }
-    }
-
-    private void tickPreviewSeek() {
-        if (_previewPlayer != null && _previewPlayer.isPlaying() && _recorderSeek != null) {
-            _recorderSeek.setProgress(_previewPlayer.getCurrentPosition());
-            _handler.postDelayed(this::tickPreviewSeek, 200);
-        }
-    }
-
-    private void releasePreviewPlayer() {
-        if (_previewPlayer != null) {
-            try {
-                _previewPlayer.stop();
-            } catch (Exception ignored) {
-            }
-            try {
-                _previewPlayer.release();
-            } catch (Exception ignored) {
-            }
-            _previewPlayer = null;
-        }
-    }
-
-    private void renderQuickTags() {
-        if (_quickTagsGroup == null) {
-            return;
-        }
-        _quickTagsGroup.removeAllViews();
-        List<String> topTags = _tagStore.getTopTags(10);
-        if (topTags.isEmpty()) {
-            topTags = java.util.Arrays.asList("idea", "todo", "reference", "meeting", "experiment");
-        }
-        final int[] colors = {
-                0xFFE3F2FD, 0xFFE8F5E9, 0xFFFFF3E0, 0xFFF3E5F5, 0xFFFFEBEE
-        };
-        for (int i = 0; i < topTags.size(); i++) {
-            final String tag = topTags.get(i);
-            Chip c = new Chip(this);
-            c.setText("#" + tag);
-            c.setChipBackgroundColor(ColorStateList.valueOf(colors[i % colors.length]));
-            c.setTextColor(0xFF1F2937);
-            c.setOnClickListener(v -> applyQuickTag(tag));
-            _quickTagsGroup.addView(c);
-        }
-    }
-
-    private void applyQuickTag(String tag) {
-        final List<String> current = _tagManager.parseAllTags(_editor.getText().toString());
-        if (!current.contains(tag)) {
-            current.add(tag);
-        }
-        final String applied = _tagManager.applyTags(_editor.getText().toString(), current);
-        _editor.setText(applied);
-        _editor.setSelection(_editor.getText().length());
-        _tagStore.recordTagUse(java.util.Collections.singletonList(tag));
+        final String rel = _storage.relativeToSession(_sessionFile, file);
+        final String title = GsFileUtils.getFilenameWithoutExtension(file);
+        insertAtCursor("\n![" + title + "](" + rel + ")\n");
         saveSession(false);
-        renderQuickTags();
+        refreshAttachmentDrawer();
     }
 
-    private void showStorageFolderDialog() {
-        final EditText input = new EditText(this);
-        input.setHint(getString(R.string.select_storage_folder));
-        input.setText(_storage.getConfiguredRootPath());
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.save_location))
-                .setView(input)
-                .setPositiveButton(android.R.string.ok, (d, w) -> {
-                    final String p = input.getText() == null ? "" : input.getText().toString().trim();
-                    _storage.setConfiguredRootPath(p);
-                    if (_storage.ensureWritableRoot()) {
-                        Toast.makeText(this, getString(R.string.saved_location_to, _storage.getNotebookRoot().getAbsolutePath()), Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(this, R.string.error_cannot_create_notebook_dir__appspecific, Toast.LENGTH_LONG).show();
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
-    }
-
-    private void insertAtCursor(String text) {
-        Editable e = _editor.getText();
-        int s = Math.max(0, _editor.getSelectionStart());
-        int en = Math.max(0, _editor.getSelectionEnd());
-        if (s > en) {
-            int tmp = s; s = en; en = tmp;
+    private void insertAtCursor(@NonNull String text) {
+        final Editable e = _editor.getText();
+        int start = Math.max(0, _editor.getSelectionStart());
+        int end = Math.max(0, _editor.getSelectionEnd());
+        if (start > end) {
+            final int tmp = start;
+            start = end;
+            end = tmp;
         }
-        e.replace(s, en, text);
-    }
-
-    private void showTagSheet() {
-        final BottomSheetDialog sheet = new BottomSheetDialog(this);
-        final View root = LayoutInflater.from(this).inflate(R.layout.portal_sheet_tags, null, false);
-        final ChipGroup selected = root.findViewById(R.id.portal_tags_selected_group);
-        final ChipGroup suggestions = root.findViewById(R.id.portal_tags_suggestions_group);
-        final TextInputEditText input = root.findViewById(R.id.portal_tags_input);
-        final MaterialButton add = root.findViewById(R.id.portal_tags_add);
-        final MaterialButton apply = root.findViewById(R.id.portal_tags_apply);
-
-        final List<String> current = _tagManager.parseAllTags(_editor.getText().toString());
-        final List<String> selectedTags = new ArrayList<>(current);
-
-        renderSelectedTags(selected, selectedTags);
-        renderSuggestionTags(suggestions, selectedTags);
-
-        add.setOnClickListener(v -> {
-            final String raw = input.getText() == null ? "" : input.getText().toString();
-            final List<String> normalized = _tagManager.normalize(java.util.Collections.singletonList(raw));
-            if (!normalized.isEmpty() && !selectedTags.contains(normalized.get(0))) {
-                selectedTags.add(normalized.get(0));
-                input.setText("");
-                renderSelectedTags(selected, selectedTags);
-                renderSuggestionTags(suggestions, selectedTags);
-            }
-        });
-
-        apply.setOnClickListener(v -> {
-            final List<String> normalized = _tagManager.normalize(selectedTags);
-            final String applied = _tagManager.applyTags(_editor.getText().toString(), normalized);
-            _editor.setText(applied);
-            _editor.setSelection(_editor.getText().length());
-            _tagStore.recordTagUse(normalized);
-            saveSession(false);
-            sheet.dismiss();
-        });
-
-        sheet.setContentView(root);
-        sheet.show();
-    }
-
-    private void renderSelectedTags(ChipGroup group, List<String> selectedTags) {
-        group.removeAllViews();
-        for (String t : new ArrayList<>(selectedTags)) {
-            Chip c = new Chip(this);
-            c.setText("#" + t);
-            c.setCloseIconVisible(true);
-            c.setOnCloseIconClickListener(v -> {
-                selectedTags.remove(t);
-                renderSelectedTags(group, selectedTags);
-                final ChipGroup sugg = ((View) group.getParent()).findViewById(R.id.portal_tags_suggestions_group);
-                renderSuggestionTags(sugg, selectedTags);
-            });
-            group.addView(c);
-        }
-    }
-
-    private void renderSuggestionTags(ChipGroup group, List<String> selectedTags) {
-        group.removeAllViews();
-        final List<String> top = _tagStore.getTopTags(12);
-        for (String t : top) {
-            if (selectedTags.contains(t)) {
-                continue;
-            }
-            Chip c = new Chip(this);
-            c.setText("#" + t);
-            c.setOnClickListener(v -> {
-                selectedTags.add(t);
-                final ChipGroup selectedGroup = ((View) group.getParent()).findViewById(R.id.portal_tags_selected_group);
-                renderSelectedTags(selectedGroup, selectedTags);
-                renderSuggestionTags(group, selectedTags);
-            });
-            group.addView(c);
-        }
+        e.replace(start, end, text);
+        _editor.setSelection(start + text.length());
     }
 
     @SuppressLint("Range")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (_sessionFile == null) {
+            return;
+        }
+        if (requestCode == REQ_CAMERA_CAPTURE) {
+            if (resultCode == RESULT_OK && _pendingCameraFile != null && _pendingCameraFile.isFile()) {
+                attachImageFile(_pendingCameraFile);
+            } else if (_pendingCameraFile != null && _pendingCameraFile.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                _pendingCameraFile.delete();
+            }
+            _pendingCameraFile = null;
+            return;
+        }
         if (resultCode != RESULT_OK || data == null) {
             return;
         }
         if (requestCode == REQ_MEDIA_PICK) {
             final Uri uri = data.getData();
-            if (uri == null || _sessionFile == null) {
+            if (uri == null) {
                 return;
             }
             try {
                 String name = "image-" + System.currentTimeMillis() + ".jpg";
-                android.database.Cursor c = getContentResolver().query(uri, null, null, null, null);
-                if (c != null) {
-                    if (c.moveToFirst()) {
-                        final int idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                final Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                if (cursor != null) {
+                    if (cursor.moveToFirst()) {
+                        final int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                         if (idx >= 0) {
-                            final String n = c.getString(idx);
+                            final String n = cursor.getString(idx);
                             if (!TextUtils.isEmpty(n)) {
                                 name = n;
                             }
                         }
                     }
-                    c.close();
+                    cursor.close();
                 }
-
                 final File attachmentDir = _storage.getAttachmentDirForSession(_sessionFile);
                 final File dest = GsFileUtils.findNonConflictingDest(attachmentDir, name);
-
                 try (InputStream in = getContentResolver().openInputStream(uri);
                      FileOutputStream out = new FileOutputStream(dest)) {
-                    byte[] buffer = new byte[8192];
+                    final byte[] buffer = new byte[8192];
                     int read;
                     while (in != null && (read = in.read(buffer)) > 0) {
                         out.write(buffer, 0, read);
                     }
                 }
-                final String rel = _storage.relativeToSession(_sessionFile, dest);
-                insertAtCursor("\n![" + GsFileUtils.getFilenameWithoutExtension(dest) + "](" + rel + ")\n");
-                saveSession(false);
+                attachImageFile(dest);
             } catch (Exception e) {
                 Toast.makeText(this, R.string.error_picture_selection, Toast.LENGTH_SHORT).show();
             }
@@ -710,10 +824,45 @@ public class PortalInputActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQ_RECORD_AUDIO) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                showRecorderSheet();
+                startRecordingNow();
             } else {
                 Toast.makeText(this, R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private boolean isClassificationTag(@NonNull String tag) {
+        return tag.startsWith("class-");
+    }
+
+    private String toClassificationSlug(@NonNull String tag) {
+        return tag.substring("class-".length());
+    }
+
+    private String toClassificationTag(@NonNull String slug) {
+        return "class-" + normalizeSlug(slug);
+    }
+
+    private String normalizeSlug(@NonNull String raw) {
+        return raw.trim()
+                .toLowerCase(Locale.ENGLISH)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "");
+    }
+
+    private String humanizeSlug(@NonNull String slug) {
+        final String[] parts = slug.split("-");
+        final StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (part.isEmpty()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return sb.toString();
     }
 }

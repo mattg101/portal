@@ -17,7 +17,9 @@ import java.util.Locale;
 public class PortalStorage {
     public static final String DIR_INBOX = "INBOX";
     private static final String PREF = "portal_storage";
-    private static final String KEY_CUSTOM_ROOT = "custom_root_path";
+    private static final String KEY_SAVE_ROOT = "save_root_path";
+    private static final String KEY_DRAFT_ROOT = "draft_root_path";
+    private static final String KEY_RENDER_MARKDOWN = "render_markdown";
 
     private final AppSettings _appSettings;
     private final SharedPreferences _pref;
@@ -29,7 +31,7 @@ public class PortalStorage {
     }
 
     public File getNotebookRoot() {
-        final String custom = _pref.getString(KEY_CUSTOM_ROOT, "");
+        final String custom = _pref.getString(KEY_SAVE_ROOT, "");
         if (custom != null && !custom.trim().isEmpty()) {
             return new File(custom.trim());
         }
@@ -37,12 +39,37 @@ public class PortalStorage {
     }
 
     public String getConfiguredRootPath() {
-        final String custom = _pref.getString(KEY_CUSTOM_ROOT, "");
+        final String custom = _pref.getString(KEY_SAVE_ROOT, "");
         return custom == null ? "" : custom;
     }
 
     public void setConfiguredRootPath(String path) {
-        _pref.edit().putString(KEY_CUSTOM_ROOT, path == null ? "" : path.trim()).apply();
+        _pref.edit().putString(KEY_SAVE_ROOT, path == null ? "" : path.trim()).apply();
+    }
+
+    public File getDraftRoot() {
+        final String custom = _pref.getString(KEY_DRAFT_ROOT, "");
+        if (custom != null && !custom.trim().isEmpty()) {
+            return new File(custom.trim());
+        }
+        return new File(getNotebookRoot(), "DRAFTS");
+    }
+
+    public String getConfiguredDraftPath() {
+        final String custom = _pref.getString(KEY_DRAFT_ROOT, "");
+        return custom == null ? "" : custom;
+    }
+
+    public void setConfiguredDraftPath(String path) {
+        _pref.edit().putString(KEY_DRAFT_ROOT, path == null ? "" : path.trim()).apply();
+    }
+
+    public boolean isRenderMarkdownEnabled() {
+        return _pref.getBoolean(KEY_RENDER_MARKDOWN, false);
+    }
+
+    public void setRenderMarkdownEnabled(boolean enabled) {
+        _pref.edit().putBoolean(KEY_RENDER_MARKDOWN, enabled).apply();
     }
 
     public File getSessionsDir() {
@@ -51,6 +78,11 @@ public class PortalStorage {
 
     public boolean ensureWritableRoot() {
         final File root = getNotebookRoot();
+        return (root.isDirectory() || root.mkdirs()) && root.canWrite();
+    }
+
+    public boolean ensureDraftRoot() {
+        final File root = getDraftRoot();
         return (root.isDirectory() || root.mkdirs()) && root.canWrite();
     }
 
@@ -80,6 +112,12 @@ public class PortalStorage {
     public File createAudioFileForSession(@NonNull File session) {
         final File dir = getAttachmentDirForSession(session);
         final String name = "audio-" + TS.format(new Date()) + ".m4a";
+        return GsFileUtils.findNonConflictingDest(dir, name);
+    }
+
+    public File createImageFileForSession(@NonNull File session) {
+        final File dir = getAttachmentDirForSession(session);
+        final String name = "image-" + TS.format(new Date()) + ".jpg";
         return GsFileUtils.findNonConflictingDest(dir, name);
     }
 
