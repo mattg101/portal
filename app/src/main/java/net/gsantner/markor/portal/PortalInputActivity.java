@@ -95,7 +95,7 @@ public class PortalInputActivity extends AppCompatActivity {
     );
 
     private final Handler _handler = new Handler(Looper.getMainLooper());
-    private final SimpleDateFormat _dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm a", Locale.getDefault());
+    private final SimpleDateFormat _dateFormat = new SimpleDateFormat("MMM d, h:mm a", Locale.getDefault());
     private final PortalAudioRecorderController _recorder = new PortalAudioRecorderController();
     private final Runnable _previewRunnable = this::refreshMarkdownPreview;
     private final Runnable _recordPulseRunnable = new Runnable() {
