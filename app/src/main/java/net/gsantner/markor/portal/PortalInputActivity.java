@@ -2,6 +2,7 @@ package net.gsantner.markor.portal;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -11,6 +12,8 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
+import android.media.MediaPlayer;
+import android.media.audiofx.Visualizer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -34,6 +37,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -762,6 +766,7 @@ public class PortalInputActivity extends AppCompatActivity {
             preview.setLayoutParams(previewParams);
             preview.setScaleType(ImageView.ScaleType.CENTER_CROP);
             preview.setImageBitmap(loadImagePreview(file));
+            preview.setOnClickListener(v -> showImagePreview(file));
 
             final ImageButton delete = new ImageButton(this);
             final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(88, 280);
@@ -792,6 +797,7 @@ public class PortalInputActivity extends AppCompatActivity {
         label.setPadding(24, 0, 24, 0);
         label.setTextColor(ContextCompat.getColor(this, R.color.white));
         label.setTextSize(15f);
+        label.setOnClickListener(v -> showAudioPreview(file));
 
         final ImageButton delete = new ImageButton(this);
         final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(88, 116);
@@ -1298,6 +1304,147 @@ public class PortalInputActivity extends AppCompatActivity {
         } catch (Exception ignored) {
             return BitmapFactory.decodeFile(file.getAbsolutePath());
         }
+    }
+
+    private void showImagePreview(@NonNull File file) {
+        final Dialog dialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        final ImageView image = new ImageView(this);
+        image.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        image.setBackgroundColor(0xFF111827);
+        image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        image.setImageURI(Uri.fromFile(file));
+        image.setOnTouchListener(new View.OnTouchListener() {
+            float downX;
+            float downY;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        downX = event.getRawX();
+                        downY = event.getRawY();
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        final float dx = event.getRawX() - downX;
+                        final float dy = event.getRawY() - downY;
+                        if (Math.abs(dy) > 120f && Math.abs(dy) > Math.abs(dx)) {
+                            dialog.dismiss();
+                            return true;
+                        }
+                        return true;
+                    default:
+                        return true;
+                }
+            }
+        });
+        dialog.setContentView(image);
+        dialog.show();
+    }
+
+    private void showAudioPreview(@NonNull File file) {
+        final Dialog dialog = new Dialog(this);
+        final LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(28, 24, 28, 24);
+        root.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
+
+        final TextView title = new TextView(this);
+        title.setText(file.getName());
+        title.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        title.setTextSize(18f);
+
+        final PortalAudioVisualizerView visualizerView = new PortalAudioVisualizerView(this);
+        visualizerView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 180));
+
+        final SeekBar seek = new SeekBar(this);
+        final MaterialButton playPause = new MaterialButton(this);
+        playPause.setText(R.string.play);
+
+        root.addView(title);
+        root.addView(visualizerView);
+        root.addView(seek);
+        root.addView(playPause);
+        dialog.setContentView(root);
+
+        final MediaPlayer player = new MediaPlayer();
+        final Handler uiHandler = new Handler(Looper.getMainLooper());
+        final Visualizer[] visualizerRef = new Visualizer[1];
+        final Runnable seekSync = new Runnable() {
+            @Override
+            public void run() {
+                if (player.isPlaying()) {
+                    seek.setProgress(player.getCurrentPosition());
+                    uiHandler.postDelayed(this, 150);
+                }
+            }
+        };
+
+        try {
+            player.setDataSource(file.getAbsolutePath());
+            player.prepare();
+            seek.setMax(player.getDuration());
+            visualizerRef[0] = new Visualizer(player.getAudioSessionId());
+            visualizerRef[0].setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+            visualizerRef[0].setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+                @Override
+                public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                }
+
+                @Override
+                public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                    visualizerView.updateFft(fft);
+                }
+            }, Visualizer.getMaxCaptureRate() / 2, false, true);
+            visualizerRef[0].setEnabled(true);
+        } catch (Exception e) {
+            dialog.dismiss();
+            return;
+        }
+
+        playPause.setOnClickListener(v -> {
+            if (player.isPlaying()) {
+                player.pause();
+                playPause.setText(R.string.play);
+            } else {
+                player.start();
+                playPause.setText(R.string.pause);
+                uiHandler.post(seekSync);
+            }
+        });
+        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    player.seekTo(progress);
+                }
+            }
+
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+        player.setOnCompletionListener(mp -> {
+            playPause.setText(R.string.play);
+            seek.setProgress(seek.getMax());
+        });
+        dialog.setOnDismissListener(d -> {
+            uiHandler.removeCallbacksAndMessages(null);
+            if (visualizerRef[0] != null) {
+                try {
+                    visualizerRef[0].setEnabled(false);
+                    visualizerRef[0].release();
+                } catch (Exception ignored) {
+                }
+            }
+            try {
+                player.stop();
+            } catch (Exception ignored) {
+            }
+            try {
+                player.release();
+            } catch (Exception ignored) {
+            }
+        });
+        dialog.show();
     }
 
     @Nullable
