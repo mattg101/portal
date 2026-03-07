@@ -507,8 +507,8 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="portal_gallery">Gallery</string>
     <string name="portal_attachments">Attachments</string>
     <string name="portal_no_attachments">Swipe right to review image and audio attachments for this note.</string>
-    <string name="portal_classification">Classification</string>
-    <string name="portal_add_classification">Add classification</string>
+    <string name="portal_classification">Pick Note Type</string>
+    <string name="portal_add_classification">Add Note Type</string>
     <string name="portal_add_classification_hint">Example: ideas for xira</string>
     <string name="portal_add_tag_hint">Example: robotics</string>
     <string name="portal_settings">Portal settings</string>

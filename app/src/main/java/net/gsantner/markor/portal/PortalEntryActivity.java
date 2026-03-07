@@ -16,7 +16,8 @@ public class PortalEntryActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            final String action = getIntent() != null ? getIntent().getAction() : null;
+            final Intent launchIntent = getIntent();
+            final String action = launchIntent != null ? launchIntent.getAction() : null;
             final PortalStorage storage = new PortalStorage(this);
             if (!storage.ensureWritableRoot()) {
                 Toast.makeText(this, R.string.error_cannot_create_notebook_dir__appspecific, Toast.LENGTH_LONG).show();
@@ -32,8 +33,9 @@ public class PortalEntryActivity extends AppCompatActivity {
 
             try {
                 File session = null;
-                final String path = getIntent().getStringExtra(PortalActions.EXTRA_SESSION_PATH);
-                if (path != null) {
+                final boolean isShareImport = PortalShareImport.isSupportedShareIntent(launchIntent);
+                final String path = launchIntent != null ? launchIntent.getStringExtra(PortalActions.EXTRA_SESSION_PATH) : null;
+                if (!isShareImport && path != null) {
                     final File f = new File(path);
                     if (f.isFile()) {
                         session = f;
@@ -42,9 +44,12 @@ public class PortalEntryActivity extends AppCompatActivity {
                 if (session == null) {
                     session = storage.createNewSessionFile();
                 }
+                if (isShareImport && launchIntent != null) {
+                    PortalShareImport.seedSessionFromShareIntent(this, storage, session, launchIntent);
+                }
 
                 final Intent openInput = new Intent(this, PortalInputActivity.class)
-                        .setAction(action == null ? PortalActions.ACTION_TEXT : action)
+                        .setAction((action == null || isShareImport) ? PortalActions.ACTION_TEXT : action)
                         .putExtra(PortalActions.EXTRA_SESSION_PATH, session.getAbsolutePath());
                 startActivity(openInput);
             } catch (Exception e) {

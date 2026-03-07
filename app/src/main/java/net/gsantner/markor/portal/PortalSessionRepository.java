@@ -6,9 +6,7 @@ import androidx.annotation.NonNull;
 
 import net.gsantner.opoc.util.GsFileUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,16 +100,25 @@ public class PortalSessionRepository {
 
     private String readFirstLines(File file, int maxLines) {
         final StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            for (int i = 0; i < maxLines; i++) {
-                final String line = br.readLine();
-                if (line == null) {
-                    break;
+        try {
+            final String sanitized = PortalAttachmentPreviewHelper.stripLegacyAttachmentMarkup(GsFileUtils.readTextFile(file));
+            if (TextUtils.isEmpty(sanitized)) {
+                return "";
+            }
+            final String[] lines = sanitized.split("\\r?\\n");
+            int added = 0;
+            for (String line : lines) {
+                final String trimmed = line.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
                 }
                 if (sb.length() > 0) {
                     sb.append("\n");
                 }
-                sb.append(line.trim());
+                sb.append(trimmed);
+                if (++added >= maxLines) {
+                    break;
+                }
             }
         } catch (Exception ignored) {
         }
