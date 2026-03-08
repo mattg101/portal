@@ -22,7 +22,7 @@
 
     <!-- Color values -->
     <color name="primary">#1E2135</color>
-    <color name="accent">#F04B4B</color>
+    <color name="accent">#E35C63</color>
     <color name="divider">#808080</color>
 
     <color name="accent_light">#FF9800</color>
@@ -40,7 +40,7 @@
     <color name="dark__file">#9E9E9E</color>
     <color name="dark__folder">#9E9E9E</color>
 
-    <color name="ic_launcher_background">#636363</color>
+    <color name="ic_launcher_background">#0B0333</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#000000</color>
     <color name="grey">#FF505050</color>
@@ -68,4 +68,10 @@
 
     <color name="link">#FF1EA3FD</color>;
     <color name="transparent">#00FFFFFF</color>
+    <color name="portal_divider">#261E2135</color>
+    <color name="portal_chip_unselected_bg">#14A0A4B8</color>
+    <color name="portal_chip_unselected_stroke">#40979CAF</color>
+    <color name="portal_chip_unselected_text">#FF4E5568</color>
+    <color name="portal_drawer_surface">#FFF7F7F7</color>
+    <color name="portal_drawer_stroke">#261E2135</color>
 </resources>

@@ -9,7 +9,7 @@
 📓 QuickNote: Fast accessible for keeping notes
 ☑️ To-Do: Write down your to-do
 🖍 Markup formats: Markdown, todo.txt and Zim wiki
-📋 Share-Into: Share any text to Markor to save to a note, to clipboard, to reshare or to open a contained link in browser
+📋 Share-Into: Share any text to Portal to save to a note, to clipboard, to reshare or to open a contained link in browser
 💡 Notebook is the root folder of documents and can be changed to any location on filesystem. QuickNote and ToDo are textfiles
 
 🎨 Highly customizeable, dark theme available
@@ -17,12 +17,12 @@
 👌 No ads or unnecessary permissions
 🌎 Language selection -- use other language than on the system
 
-💡 Unlike other office suites (like <a href="https://f-droid.org/packages/org.documentfoundation.libreoffice/">LibreOffice</a>) or to-do apps (like Wunderlist), Markor has one streamlined text editor with no other editing UI. Markor shows how powerful and expressive simple text can be. View, edit, manipulate and convert plaintext!
+💡 Unlike other office suites (like <a href="https://f-droid.org/packages/org.documentfoundation.libreoffice/">LibreOffice</a>) or to-do apps (like Wunderlist), Portal has one streamlined text editor with no other editing UI. Portal shows how powerful and expressive simple text can be. View, edit, manipulate and convert plaintext!
 
-🔃 Markor works with sync apps, but they have to do syncing respectively. Sync clients known to work in combination include BitTorrent Sync, Dropbox, FolderSync, <a href="https://f-droid.org/packages/com.owncloud.android/">OwnCloud</a>, <a href="https://f-droid.org/packages/com.nextcloud.client/">NextCloud</a>, <a href="https://f-droid.org/packages/com.seafile.seadroid2/">Seafile</a>, <a href="https://f-droid.org/packages/com.nutomic.syncthingandroid/">Syncthing</a>, <a href="https://f-droid.org/packages/org.amoradi.syncopoli/">Syncopoli</a>
+🔃 Portal works with sync apps, but they have to do syncing respectively. Sync clients known to work in combination include BitTorrent Sync, Dropbox, FolderSync, <a href="https://f-droid.org/packages/com.owncloud.android/">OwnCloud</a>, <a href="https://f-droid.org/packages/com.nextcloud.client/">NextCloud</a>, <a href="https://f-droid.org/packages/com.seafile.seadroid2/">Seafile</a>, <a href="https://f-droid.org/packages/com.nutomic.syncthingandroid/">Syncthing</a>, <a href="https://f-droid.org/packages/org.amoradi.syncopoli/">Syncopoli</a>
 
-👀 These apps may also be in your interest if you like Markor: OneNote, EverNote, Google Keep, Wunderlist, Read-It-Later, Pocket, Epsilon Notes, iA Writer, Todoist, Shaarli, Wallabag, Simple Notes, Simpletask, Share to clipboard, NextCloud Bookmarks, Easy Open Link
+👀 These apps may also be in your interest if you like Portal: OneNote, EverNote, Google Keep, Wunderlist, Read-It-Later, Pocket, Epsilon Notes, iA Writer, Todoist, Shaarli, Wallabag, Simple Notes, Simpletask, Share to clipboard, NextCloud Bookmarks, Easy Open Link
 
 
 <b>Support the project:</b>
-<a href="https://github.com/gsantner/markor/issues/new/choose">Report ideas and issues</a> | <a href="https://github.com/gsantner/markor/discussions">Join community discussion</a> | <a href="https://crowdin.com/project/markor">Translate</a> | <a href="https://github.com/gsantner/markor#contributions">More information about contributions</a>
+<a href="https://github.com/mattg101/portal/issues/new/choose">Report ideas and issues</a> | <a href="https://github.com/mattg101/portal/discussions">Join community discussion</a> | <a href="https://github.com/mattg101/portal">Translate</a> | <a href="https://github.com/mattg101/portal#contributions">More information about contributions</a>

@@ -8,6 +8,12 @@
     <color name="file">@color/dark__file</color>
     <color name="folder">@color/dark__folder</color>
     <color name="background">@color/dark__background</color>
+    <color name="portal_divider">#88FFFFFF</color>
+    <color name="portal_chip_unselected_bg">#22384456</color>
+    <color name="portal_chip_unselected_stroke">#7A94A2C0</color>
+    <color name="portal_chip_unselected_text">#FFF1F5FF</color>
+    <color name="portal_drawer_surface">#FF2B2D36</color>
+    <color name="portal_drawer_stroke">#40FFFFFF</color>
 
     <!-- All values specified only in base colors.xml  -->
 

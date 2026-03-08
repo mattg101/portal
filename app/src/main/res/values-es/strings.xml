@@ -202,7 +202,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="permissions">Permisos</string>
     <string name="permission_paths_revert">¿Revertir a ubicaciones por defecto?</string>
     <string name="permission_not_granted">Permiso no concedido</string>
-    <string name="sync_to_local_folder_notice">Nota: Las aplicaciones de sincronización pueden colocar archivos en carpetas personalizadas. Puede abrirlas cambiando la carpeta de documentos de Markor en consecuencia, o en otro gestor de archivos.</string>
+    <string name="sync_to_local_folder_notice">Nota: Las aplicaciones de sincronización pueden colocar archivos en carpetas personalizadas. Puede abrirlas cambiando la carpeta de documentos de Portal en consecuencia, o en otro gestor de archivos.</string>
     <string name="vertical_alignment">Alineación vertical</string>
     <string name="horizontal_alignment">Alineación horizontal</string>
     <string name="default_">Predeterminado</string>
@@ -296,8 +296,8 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="appdata_private">AppData (privado)</string>
     <string name="appdata_sdcard">AppData (tarjeta SD)</string>
     <string name="internal_storage">Almacenamiento interno</string>
-    <string name="open_the_document_from_main_view">Puede abrir el documento desde la vista principal en la parte inferior, el navegador de archivos o el lanzador. También hay una opción para añadir texto compartido en Markor.</string>
-    <string name="notebook_is_the_home_of_your_files">Notebook es la carpeta que Markor carga en el navegador de archivos cuando se inicia la aplicación. Es la carpeta de inicio de sus archivos.</string>
+    <string name="open_the_document_from_main_view">Puede abrir el documento desde la vista principal en la parte inferior, el navegador de archivos o el lanzador. También hay una opción para añadir texto compartido en Portal.</string>
+    <string name="notebook_is_the_home_of_your_files">Notebook es la carpeta que Portal carga en el navegador de archivos cuando se inicia la aplicación. Es la carpeta de inicio de sus archivos.</string>
     <string name="quicknote_is_the_fastest_option_to_write_down_notes">QuickNote es la opción más rápida para escribir notas. Es un archivo en formato Markdown con la ubicación predeterminada &gt;Notebook/QuickNote.md&lt;, puede establecer una ruta de archivo personalizada en la configuración.</string>
     <string name="todo_is_the_easiest_way_">Administre sus tareas con ToDo. Es un archivo en formato todo.txt con la ubicación predeterminada &gt;Notebook/todo.txt&lt;, puede establecer una ruta de archivo personalizada en la configuración.</string>
     <string name="navigationbar_color">Color de la barra de navegación</string>
@@ -390,7 +390,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="encrypt_file_content">Cifrar contenido del archivo</string>
     <string name="utf8_with_bom">UTF-8 con BOM</string>
     <string name="could_not_encrypt_file_content_the_file_was_not_saved">No se pudo cifrar el contenido del archivo. El archivo no fue guardado.</string>
-    <string name="could_not_decrypt_file_content_wrong_password_or_is_the_file_maybe_not_encrypted">No se pudo descifrar el contenido del archivo. ¿Usaste una contraseña incorrecta? ¿El archivo está realmente cifrado con el cifrado AES de Markor?</string>
+    <string name="could_not_decrypt_file_content_wrong_password_or_is_the_file_maybe_not_encrypted">No se pudo descifrar el contenido del archivo. ¿Usaste una contraseña incorrecta? ¿El archivo está realmente cifrado con el cifrado AES de Portal?</string>
     <string name="password_already_set_setting_a_new_password_will_overwrite">La contraseña ya está configurada. Establecer una nueva contraseña sobrescribirá la contraseña existente y es posible que ya no pueda acceder a los archivos en caso de que olvide la contraseña.</string>
     <string name="code_block">Bloque de código</string>
     <string name="add_completion_date">Añadir fecha de finalización</string>
@@ -447,7 +447,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="match_all">Coincidir todos</string>
     <string name="dynamic_notebook_root_links">Búsqueda dinámica de la raíz del cuaderno</string>
     <string name="search_dynamically_for_notebook_root">Para seguir los enlaces de la wiki, busque dinámicamente el archivo notebook.zim para identificar el directorio raíz del cuaderno actual. Marque esta opción si utiliza múltiples cuadernos zim o el directorio de cuadernos establecido en la aplicación no corresponde a su cuaderno zim.</string>
-    <string name="share_into_format_prefix_for_text_shared">Formato/prefijo para el texto compartido en Markor. Sigue las reglas SimpleDateFormat de Android.\n\nUse el marcador de posición {{text}} para ubicar el texto compartido. Si no se especifica, se agrega el texto compartido y se usa el formato como prefijo.</string>
+    <string name="share_into_format_prefix_for_text_shared">Formato/prefijo para el texto compartido en Portal. Sigue las reglas SimpleDateFormat de Android.\n\nUse el marcador de posición {{text}} para ubicar el texto compartido. Si no se especifica, se agrega el texto compartido y se usa el formato como prefijo.</string>
     <string name="share_into_format">Compartir en - Formato</string>
     <string name="attachment_folder_name">Nombre de la carpeta adjunta</string>
     <string name="attachment_folder_name_desc">Subcarpeta debajo de la carpeta actual donde se guardarán los accesorios. Si se deja en blanco, los accesorios se guardarán en la carpeta actual.</string>
@@ -457,7 +457,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="error_could_not_open_file">Error: No se pudo abrir el archivo.</string>
     <string name="document_error_clip">Error encontrado: Texto copiado al portapapeles.</string>
     <string name="wont_save_min_length">Los archivos con menos de %d caracteres no se guardan automáticamente para evitar la pérdida de datos.</string>
-    <string name="advanced_filtering_help"><![CDATA[<small><a href="https://www.github.com/gsantner/markor/discussions/1940">Sintaxis de filtrado avanzado</a></small>]]></string>
+    <string name="advanced_filtering_help"><![CDATA[<small><a href="https://github.com/mattg101/portal/discussions">Sintaxis de filtrado avanzado</a></small>]]></string>
     <string name="filter">Filtro</string>
     <string name="text_case">Mayúscula/minúscula</string>
     <string name="use_tab_to_indent">Sangrar líneas con la tecla TAB</string>

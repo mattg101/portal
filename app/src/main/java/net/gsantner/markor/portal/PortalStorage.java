@@ -2,10 +2,10 @@ package net.gsantner.markor.portal;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Environment;
 
 import androidx.annotation.NonNull;
 
-import net.gsantner.markor.model.AppSettings;
 import net.gsantner.opoc.util.GsFileUtils;
 
 import java.io.File;
@@ -16,19 +16,21 @@ import java.util.List;
 import java.util.Locale;
 
 public class PortalStorage {
-    public static final String DIR_INBOX = "INBOX";
+    public static final String DIR_PORTAL = "Portal";
+    public static final String DIR_OUTBOX = "Portal Outbox";
+    public static final String DIR_DRAFTS = "Portal Drafts";
+    public static final String DIR_SESSIONS = "Portal Sessions";
     private static final String PREF = "portal_storage";
     private static final String KEY_SAVE_ROOT = "save_root_path";
     private static final String KEY_DRAFT_ROOT = "draft_root_path";
     private static final String KEY_RENDER_MARKDOWN = "render_markdown";
     private static final String KEY_CUSTOM_CLASSIFICATIONS = "custom_classifications";
+    private static final String KEY_HIDDEN_DEFAULT_CLASSIFICATIONS = "hidden_default_classifications";
 
-    private final AppSettings _appSettings;
     private final SharedPreferences _pref;
     private static final SimpleDateFormat TS = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.ENGLISH);
 
     public PortalStorage(@NonNull Context context) {
-        _appSettings = AppSettings.get(context);
         _pref = context.getSharedPreferences(PREF, Context.MODE_PRIVATE);
     }
 
@@ -37,7 +39,11 @@ public class PortalStorage {
         if (custom != null && !custom.trim().isEmpty()) {
             return new File(custom.trim());
         }
-        return _appSettings.getNotebookDirectory();
+        return new File(getPortalRoot(), DIR_OUTBOX);
+    }
+
+    public File getPortalRoot() {
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), DIR_PORTAL);
     }
 
     public String getConfiguredRootPath() {
@@ -54,7 +60,7 @@ public class PortalStorage {
         if (custom != null && !custom.trim().isEmpty()) {
             return new File(custom.trim());
         }
-        return new File(getNotebookRoot(), "DRAFTS");
+        return new File(getPortalRoot(), DIR_DRAFTS);
     }
 
     public String getConfiguredDraftPath() {
@@ -88,8 +94,36 @@ public class PortalStorage {
         _pref.edit().putStringSet(KEY_CUSTOM_CLASSIFICATIONS, next).apply();
     }
 
+    public void removeCustomClassification(@NonNull String slug) {
+        final java.util.LinkedHashSet<String> next = new java.util.LinkedHashSet<>(getCustomClassifications());
+        next.remove(slug.trim());
+        _pref.edit().putStringSet(KEY_CUSTOM_CLASSIFICATIONS, next).apply();
+    }
+
+    public java.util.Set<String> getHiddenDefaultClassifications() {
+        return new java.util.LinkedHashSet<>(
+                _pref.getStringSet(KEY_HIDDEN_DEFAULT_CLASSIFICATIONS, java.util.Collections.emptySet())
+        );
+    }
+
+    public void hideDefaultClassification(@NonNull String slug) {
+        final String trimmed = slug.trim();
+        if (trimmed.isEmpty()) {
+            return;
+        }
+        final java.util.LinkedHashSet<String> next = new java.util.LinkedHashSet<>(getHiddenDefaultClassifications());
+        next.add(trimmed);
+        _pref.edit().putStringSet(KEY_HIDDEN_DEFAULT_CLASSIFICATIONS, next).apply();
+    }
+
+    public void restoreDefaultClassification(@NonNull String slug) {
+        final java.util.LinkedHashSet<String> next = new java.util.LinkedHashSet<>(getHiddenDefaultClassifications());
+        next.remove(slug.trim());
+        _pref.edit().putStringSet(KEY_HIDDEN_DEFAULT_CLASSIFICATIONS, next).apply();
+    }
+
     public File getSessionsDir() {
-        return new File(getNotebookRoot(), DIR_INBOX);
+        return new File(getPortalRoot(), DIR_SESSIONS);
     }
 
     public boolean ensureWritableRoot() {

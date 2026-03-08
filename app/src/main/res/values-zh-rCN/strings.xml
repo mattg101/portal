@@ -10,462 +10,462 @@ You should have received a copy of the CC0 legalcode along with this
 work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="settings">设置</string>
-    <string name="light">浅色</string>
-    <string name="dark">深色</string>
-    <string name="delete">删除</string>
-    <string name="appearance">外观</string>
-    <string name="rename">重命名</string>
-    <string name="confirm_delete">确认删除</string>
-    <string name="do_you_really_want_to_delete_this_witharg">您确定要删除 %s 吗？</string>
-    <string name="confirm_overwrite">确认覆盖</string>
-    <string name="file_already_exists_overwerite">文件已存在，是否覆盖？</string>
-    <string name="browse_filesystem">浏览文件系统</string>
-    <string name="title">标题</string>
-    <string name="empty_directory">空目录</string>
-    <string name="enter_name_of_folder">输入文件夹名</string>
-    <string name="create_folder">新建文件夹</string>
-    <string name="create_new_document">新建文档</string>
-    <string name="move">移动</string>
-    <string name="info">信息</string>
-    <string name="file_folder_already_exists_please_use_a_different_name">已存在同名文件/文件夹！请换一个名字试试。</string>
-    <string name="import_from_device">从本设备导入</string>
-    <string name="import_">导入</string>
-    <string name="append_to_witharg">附加到 %s</string>
-    <string name="select_folder">选择文件夹</string>
-    <string name="edit">编辑</string>
-    <string name="search_documents">搜索文档</string>
-    <string name="share_to_arrow" tools:ignore="TypographyEllipsis">分享到&#8230;</string>
-    <string name="share">分享</string>
-    <string name="search">搜索</string>
-    <string name="previous_match">上一个匹配</string>
-    <string name="next_match">下一个匹配</string>
-    <string name="display_converted_markup">显示转换后的标记</string>
-    <string name="editor">编辑器</string>
-    <string name="folders">文件夹</string>
-    <string name="files">文件</string>
-    <string name="document">文档</string>
-    <string name="documents">文档</string>
-    <string name="html_as_plaintext">HTML (显示为纯文本)</string>
-    <string name="document_editor_font">文档编辑器字体</string>
-    <string name="theme">主题</string>
-    <string name="open_existing_files_in_view_mode">在查看模式中打开现有文件</string>
-    <string name="about">关于</string>
-    <string name="plaintext">纯文本</string>
-    <string name="file">文件</string>
-    <string name="image">图片</string>
-    <string name="font_size">字号</string>
-    <string name="render_rtl_language">渲染从右往左读的语言</string>
-    <string name="error_cannot_create_notebook_dir__appspecific">错误：无法创建笔记本目录</string>
-    <string name="last_modified_witharg">上次修改：%s</string>
-    <string name="last_modified">最后修改</string>
-    <string name="select_this_folder">选择这个文件夹</string>
-    <string name="select">选择</string>
-    <string name="select_all">全选</string>
-    <string name="create">新建</string>
-    <string name="select_entries">选择 输入文字</string>
-    <string name="one_item_selected">已选中一项</string>
-    <string name="items_selected_witharg" tools:ignore="PluralsCandidate">已选择 %d 个项目</string>
-    <string name="hide_statusbar_at_this_view">在此视图中隐藏状态栏</string>
-    <string name="hide_statusbar">隐藏状态栏</string>
-    <string name="name">名称</string>
-    <string name="url_or_path">URL / 路径</string>
-    <string name="insert_link">插入链接</string>
-    <string name="format_link">格式化链接</string>
-    <string name="insert_image">插入图片</string>
-    <string name="contributors">贡献者</string>
-    <string name="save_location">保存位置</string>
-    <string name="saved_location_to">已保存到 %s</string>
-    <string name="select_storage_folder">选择存储文件夹</string>
-    <string name="licenses">开源协议</string>
-    <string name="changelog">更新日志​​​​​</string>
-    <string name="more_info">更多信息</string>
-    <string name="show_license_of_the_app">显示应用的开源许可协议</string>
-    <string name="show_third_party_licenses">显示第三方许可</string>
-    <string name="language_change_restart_description">更改语言（重启应用后生效）</string>
-    <string name="language">语言</string>
-    <string name="storage_permission_required">需要存储权限读写文件</string>
-    <string name="open_with">打开方式</string>
-    <string name="sort_by">排序方式</string>
-    <string name="date">日期</string>
-    <string name="deleteme____1">名称</string>
-    <string name="size">按文件大小排序</string>
-    <string name="reverse_order">逆向排序</string>
-    <string name="contribute">贡献</string>
-    <string name="project_page">项目主页</string>
-    <string name="press_back_again_to_exit">再按一次退出</string>
-    <string name="exit">退出</string>
-    <string name="undo">撤销</string>
-    <string name="redo">重做</string>
-    <string name="more">更多</string>
-    <string name="notebook">笔记本</string>
-    <string name="help">帮助</string>
-    <string name="todo_list">待办清单</string>
-    <string name="task">任务</string>
-    <string name="context">情境</string>
-    <string name="list">列表</string>
-    <string name="priority">优先级</string>
-    <string name="history">历史</string>
-    <string name="sync">同步</string>
-    <string name="search_or_custom">搜索 / 自定义</string>
-    <string name="save">保存</string>
-    <string name="update">更新</string>
-    <string name="clear">清空</string>
-    <string name="due_date">截止日期</string>
-    <string name="current_date">当前日期</string>
-    <string name="archive">归档</string>
-    <string name="add_task">添加任务</string>
-    <string name="add_x_witharg">添加 %s</string>
-    <string name="document_to_be_loaded_and_saved_as_witharg">该文件将被保存为 \"%s\"</string>
-    <string name="refresh">刷新</string>
-    <string name="create_shortcut">创建快捷方式</string>
-    <string name="tried_to_create_shortcut_for_this_notice">已尝试向您的主屏幕添加快捷方式。请注意部分启动器可能不支持此操作。</string>
-    <string name="file_not_in_save_path_do_import_notice__appspecific">所选文件不在本应用的笔记本目录中。要将其复制到当前文件夹吗？这会覆盖任何具有相同名称的现有文件。</string>
-    <string name="file_not_in_current_folder_do_copy__appspecific">文件不在当前文件夹中。要将其复制到当前文件夹吗？这会覆盖任何具有相同名称的现有文件。</string>
-    <string name="files_and_folders">文件与文件夹</string>
-    <string name="document_browser">文档浏览器</string>
-    <string name="file_browser">文件浏览器</string>
-    <string name="set_due_date">设置截止日期</string>
-    <string name="insert_replace_date">插入日期</string>
-    <string name="create_note" needed="false">新建笔记</string>
-    <string name="special_documents" needed="false">特殊文件</string>
-    <string name="keep_screen_on" needed="false">保持屏幕开启</string>
-    <string name="disallow_screenshots">禁止截屏</string>
-    <string name="back_to_previous_folder" needed="false">返回上一个文件夹</string>
-    <string name="app_settings" needed="false">应用设置</string>
-    <string name="editor_settings" needed="false">编辑器设置</string>
-    <string name="remember_last_folder_location_on_startup" needed="false">记住上次退出的位置</string>
-    <string name="number_of_files_witharg" needed="false">文件数量：%d</string>
-    <string name="app_wide">全局</string>
-    <string name="main_view">主界面</string>
-    <string name="overall_theme_used_in_app">作用于整个应用的主题</string>
-    <string name="remember_last_directory">记住上次使用的目录</string>
-    <string name="syntax_highlighting">语法高亮</string>
-    <string name="highlighting_delay">语法高亮延时</string>
-    <string name="highlighting_delay_lower_value_more_battery_drain_description__appspecific">刷新高亮的延迟时间（以毫秒为单位）。 较低的值将更早开始高亮，但它会耗尽您的电池，并可能拖慢旧设备上的应用程序速度。</string>
-    <string name="highlighting_enabled_or_not__appspecific">控制是否应突出显示输入的文本</string>
-    <string name="control_font_size_in_editor">调整编辑器中文字的字体大小</string>
-    <string name="textactions_show_useful_actions_description__appspecific">在底部显示一排快捷按钮。这些文本操作按钮可以修改文字或着对文字进行其他操作。</string>
-    <string name="load_last_opened_folder_at_startup">启动时加载上次打开的目录</string>
-    <string name="format">格式</string>
-    <string name="contexts">情境</string>
-    <string name="project">项目</string>
-    <string name="projects">项目</string>
-    <string name="none">无</string>
-    <string name="other">其它</string>
-    <string name="empty_file">空文件</string>
-    <string name="break_page_pdf_print">分页 (PDF/打印)</string>
-    <string name="underline">下划线</string>
-    <string name="underline_hex_color_wether_or_not_to_description__appspecific">是否根据颜色在十六进制颜色代码下划线</string>
-    <string name="underline_hex_color_codes">下划线十六进制颜色代码</string>
-    <string name="insert_current_date_when_starting_new_task">在开始一项新任务时自动插入当前日期</string>
-    <string name="tasks_with_todays_date">带有今天日期的任务</string>
-    <string name="append_contexts_and_projects">附加情境与项目</string>
-    <string name="append_contexts_and_projects_on_end_of_task">使用对应的文本操作时，在任务末尾附加情境和项目</string>
-    <string name="rtl_rendering">从右向左渲染</string>
-    <string name="highlight_line_ending">高亮行末</string>
-    <string name="highlight_line_ending_if_two_or_more_spaces">突出显示包含两个或多个空格的行末尾的空格</string>
-    <string name="use_monospace_for_code">为代码使用等宽字体</string>
-    <string name="disable_code_block_highlight">停用代码块高亮</string>
-    <string name="auto_renumber_ordered_list">自动重新编号的有序列表</string>
-    <string name="auto_renumber_ordered_list_slowdown">此选项可能会影响应用性能。</string>
-    <string name="use_different_fonttype_slow_down">用不同的字体显示代码。启用后可能会大幅影响性能。</string>
-    <string name="general">通用</string>
-    <string name="resources">资源</string>
-    <string name="space_between_lines_in_percent">行间距百分比</string>
-    <string name="line_spacing">行间距</string>
-    <string name="archive_does_move_done_tasks">将完成的任务移动至同目录下的指定文件</string>
-    <string name="sort_tasks_by_selected_order">按所选顺序对任务进行排序</string>
-    <string name="special_key">特殊按键</string>
-    <string name="asciidoc_special_key">特殊 AsciiDoc 内容</string>
-    <string name="key_page_up">上一页 (Page Up)</string>
-    <string name="key_page_down">下一页 (Page Down)</string>
-    <string name="key_pos_1">行首 (Home 键)</string>
-    <string name="key_pos_end">行末 (End 键)</string>
-    <string name="key_pos_1_document">文首</string>
-    <string name="key_pos_end_document">文末</string>
-    <string name="move_text_one_line_up">上移行</string>
-    <string name="move_text_one_line_down">下移行</string>
-    <string name="start_new_line_below">开始新行</string>
-    <string name="select_current_line">选中当前行</string>
-    <string name="key_ctrl_a">全选 (Ctrl + A)</string>
-    <string name="key_tab">制表符</string>
-    <string name="zero_width_space">零宽度空格</string>
-    <string name="em_space">全角空格 (&amp;emsp;)</string>
-    <string name="start_on_bottom">从文末开始</string>
-    <string name="start_on_bottom_when_loading_document">载入文件时将光标置于文件末尾处</string>
-    <string name="unordered_list_character">无序列表标示字符</string>
-    <string name="character_to_start_items_of_unordered_list_with">用于表示无序列表的字符</string>
-    <string name="unordered_list_char_dash">短破折号 (-)</string>
-    <string name="unordered_list_char_asterisk">星号 (*)</string>
-    <string name="unordered_list_char_plus">加号 (+)</string>
-    <string name="filemanager_doesnot_supply_required_data__appspecific">Markor 只能编辑本地、离线可用的文档，且不支持不提供完整文件路径的文件管理器。</string>
-    <string name="file_does_not_exist_and_cant_be_created">文件或目录不存在且无法创建</string>
-    <string name="permissions">权限</string>
-    <string name="permission_paths_revert">恢复为默认路径？</string>
-    <string name="permission_not_granted">未授予权限</string>
-    <string name="sync_to_local_folder_notice">注意：同步应用可能会将文件放置在自定义文件夹中，请相应地更改 Markor 的文档文件夹或在另一个文件管理器中打开它们。</string>
-    <string name="vertical_alignment">垂直对齐</string>
-    <string name="horizontal_alignment">水平对齐</string>
-    <string name="default_">默认</string>
-    <string name="left">左端</string>
-    <string name="right">右端</string>
-    <string name="top">顶端</string>
-    <string name="bottom">底端</string>
-    <string name="center">居中</string>
-    <string name="actionbutton_spacing">快捷键间距</string>
-    <string name="horizontal_space_between_actionbuttons">快捷键之间的水平间距</string>
-    <string name="center_text">居中文字</string>
-    <string name="edit_text_in_center_of_screen">在屏幕中央编辑文本</string>
-    <string name="clipboard">剪切板</string>
-    <string name="select_existing_document">选择已有文档</string>
-    <string name="select_create_document">选择或创建文档</string>
-    <string name="select_create_folder">选择或创建文件夹</string>
-    <string name="open_source_licenses">开源协议</string>
-    <string name="rate_this_app">评价本应用</string>
-    <string name="translate">翻译</string>
-    <string name="more_info_and_help">更多信息与帮助</string>
-    <string name="report_bugs">报告 bug</string>
-    <string name="do_you_have_a_question_or_problem">存在疑问或问题吗？</string>
-    <string name="join_community">加入社区</string>
-    <string name="bug_reports_suggest_improvements">给出反馈，报告问题，或提出改进建议</string>
-    <string name="help_translating_this_app">翻译本应用</string>
-    <string name="source_code">源代码</string>
-    <string name="project_license">项目开源协议</string>
-    <string name="contribute_code_to_this_project_anybody_welcome">为本项目贡献代码。我们欢迎所有人参与进来，包括新手</string>
-    <string name="project_team">项目团队</string>
-    <string name="community">社区</string>
-    <string name="contributors_public_add_yourself_description">显示贡献者信息。贡献者可自行选择是否被添加到这里。</string>
-    <string name="descending">降序排序</string>
-    <string name="ascending">升序排序</string>
-    <string name="disable_spelling_underline">停用语法检查</string>
-    <string name="spellcheck_keyboard_suggestion_stay_red_underline_vanishes">保留输入法建议的同时，移除自动纠错的下划线</string>
-    <string name="location">位置</string>
-    <string name="text_lines">文本行数</string>
-    <string name="text_characters">文字符号</string>
-    <string name="text_words">文字词</string>
-    <string name="directory">目录</string>
-    <string name="recently_viewed_documents">最近文档</string>
-    <string name="details">细节</string>
-    <string name="calendar">日历</string>
-    <string name="warning_disallowed_sd_access">警告！ 应用没有保存此文件的权限，所有更改都将丢失。 无法解决问题或确认某些内容，Android 拒绝此处的任何访问。</string>
-    <string name="error_picture_selection">没有选取照片</string>
-    <string name="gallery_picture">从相册选取</string>
-    <string name="camera_picture">相机</string>
-    <string name="enable_undo_and_redo_be_patient">启用撤消和重做操作。 只适合高级使用，请耐心、不要删除重要的东西。 关闭并打开编辑器以清除历史记录。</string>
-    <string name="description">描述</string>
-    <string name="edit_picture">编辑图片</string>
-    <string name="math">启用数学公式渲染</string>
-    <string name="enter_yaml_front_matter_attributes_to_show">在已浏览文档的顶部显示输入的 YAML Front Matter 属性。以逗号分隔输入的关键词。留空表示无或使用 \'*\' 表示所有。\n\n在文档中如果定义了任何属性 (例如 title: \'Hello\')，并且你的文档中也含有 {{ post.title }}，那么该属性将被替换。你可以使用以上方式自定义 Front Matter 标题。</string>
-    <string name="table_of_contents">目录</string>
-    <string name="miscellaneous">杂项设置</string>
-    <string name="prefer_view">首选视图</string>
-    <string name="no_calendar_app_is_installed">没有安装日历应用！</string>
-    <string name="popular_documents">常用文档</string>
-    <string name="color">颜色</string>
-    <string name="basic_color_scheme">基本颜色方案</string>
-    <string name="background_foreground_color_in_editor_works_dark_light">改变文本编辑器的背景色和前景色。随应用主题调整因此在明亮和黑暗主题中可用。语法高亮颜色保持不变。</string>
-    <string name="preset">预设值</string>
-    <string name="foreground">前景</string>
-    <string name="background">背景</string>
-    <string name="set_foreground_or_background_color_hexcolor_also_possible">设置文本的前景色和背景色吗？插入十六进制颜色代码也可以。</string>
-    <string name="type">文件类型</string>
-    <string name="folder">文件夹</string>
-    <string name="folder_is_created_without_extension">- 创建文件夹时不会含有文件扩展名</string>
-    <string name="keep_existing_file">- 文件和文件夹不会被覆盖</string>
-    <string name="multiple_windows">多窗口</string>
-    <string name="font">字体</string>
-    <string name="open_new_documents_always_in_new_window">始终在单独的窗口中打开文档。使用设备的 \"最近\" 键进行切换。</string>
-    <string name="enter_or_select_format">输入或选择格式</string>
-    <string name="pick_date">选择日期</string>
-    <string name="pick_time">选择时间</string>
-    <string name="get_format_instead_date_or_time">仅生成格式, 而不是日期或时间</string>
-    <string name="use_current_date_and_time">使用当前日期 &amp; 时间</string>
-    <string name="result">结果</string>
-    <string name="just_time">仅时间</string>
-    <string name="just_date">仅日期</string>
-    <string name="last_used">上次使用</string>
-    <string name="my_note">我的笔记</string>
-    <string name="close">关闭</string>
-    <string name="cancel">取消</string>
-    <string name="app_start_tab">应用程序启动选项卡</string>
-    <string name="tab_to_select_at_start">启动应用时选择的选项卡</string>
-    <string name="swipe_to_change_mode">滑动以更改模式</string>
-    <string name="swipe_to_change_to_edit_or_view_mode">滑动以切换编辑或查看模式(当前模式相反)</string>
-    <string name="folder_first">文件夹在前</string>
-    <string name="go_to">转到</string>
-    <string name="appdata_public">应用数据(公共)</string>
-    <string name="appdata_private">应用数据(私有)</string>
-    <string name="appdata_sdcard">应用数据（SD 卡）</string>
-    <string name="internal_storage">内部存储</string>
-    <string name="open_the_document_from_main_view">您可以从底部主视图、文件浏览器或启动器打开文档。还有一个选项可以附加分享到 Markor 的文本。</string>
-    <string name="notebook_is_the_home_of_your_files">笔记本是程序启动时 Markor 在文件浏览器中加载的文件夹。它是你的文件的主文件夹。</string>
-    <string name="quicknote_is_the_fastest_option_to_write_down_notes">QuickNote 是写下笔记最快选择。它是一个默认位置为 &gt;Notebook/QuickNote.md&lt; 的 Markdown 格式的文件，您可以在设置中设置一个自定义文件路径。</string>
-    <string name="todo_is_the_easiest_way_">使用 ToDo 管理你的任务。它是 todo.txt 格式的文件，默认位置是 &gt;Notebook/todo.txt&lt;，你可以在设置中自定义文件路径。</string>
-    <string name="navigationbar_color">导航栏颜色</string>
-    <string name="black">黑色</string>
-    <string name="white">白色</string>
-    <string name="view">查看</string>
-    <string name="view_mode">查看模式</string>
-    <string name="edit_mode">编辑模式</string>
-    <string name="mount_storage">挂载存储</string>
-    <string name="application_needs_access_to_storage_mount_it">访问此存储位置需要权限。挂载存储以提供访问权限。确认此对话框将弹出窗口。在那里选择存储位置，然后点按选择。</string>
-    <string name="share_into">分享到</string>
-    <string name="favourite">收藏</string>
-    <string name="favourites">收藏</string>
-    <string name="please_wait">请稍候</string>
-    <string name="app_start_folder">应用起始文件夹</string>
-    <string name="tab_width">制表符宽度</string>
-    <string name="amount_of_space_for_tab">制表符显示的空格数</string>
-    <string name="selected_file_may_be_a_textfile_want_to_open_in_editor">选中的文件可能是一个纯文本文件。 您要在编辑器中打开，或在其他应用中打开它吗？\n\n请勿尝试打开二进制文件。 如果不确定，请使用其他应用打开。</string>
-    <string name="list_in_recent_files">最近文件列表</string>
-    <string name="reload">刷新</string>
-    <string name="wrap_words">折行</string>
-    <string name="line_numbers">行号</string>
-    <string name="soft_break_if_not_fit_to_width_else_enable_horizontal_scrolling">如果文字不适合屏幕宽度则软打断。否则启用横向滚动。</string>
-    <string name="recursive_search_in_location">在%s中递归搜索</string>
-    <string name="always_open_with_this_app">总是使用本应用打开</string>
-    <string name="always_open_files_with_this_app_when_list_contains_file_extension">总是使用本应用打开此列表包含的文件扩展名的文件，例如如果你想编辑网页文件和无扩展名的文件，请使用 \'None, .html, .css , .js\'。</string>
-    <string name="open_file_with">打开文件</string>
-    <string name="rotate">旋转</string>
-    <string name="template">模板</string>
-    <string name="send_debug_log">发送调试日志</string>
-    <string name="print_pdf">打印/PDF</string>
-    <string name="bigger_headings">大标题</string>
-    <string name="increase_text_size_of_headings_according_to_level">根据标题级别(# h1, ## h2, ### h3…) 增加标题文字大小</string>
-    <string name="current">当前</string>
-    <string name="record_audio">录制音频</string>
-    <string name="attach">附件</string>
-    <string name="attachment">附件</string>
-    <string name="copy_file">复制文件</string>
-    <string name="page">页面</string>
-    <string name="experimental_features">实验功能</string>
-    <string name="tools">工具</string>
-    <string name="reading">正在读取</string>
-    <string name="read">读取</string>
-    <string name="table">表格</string>
-    <string name="how_much_columns_press_table_button_long_to_start_table">需要多少列？长按表格按钮来新建一个表格 (插入表头) ，短按以添加一行。</string>
-    <string name="example_of_a_markdown_table">Markdown 表格示例</string>
-    <string name="delete_lines">删除行</string>
-    <string name="duplicate_lines">复制行</string>
-    <string name="unordered_list">无序列表</string>
-    <string name="ordered_list">有序列表</string>
-    <string name="check_list">复选列表</string>
-    <string name="open_link">打开链接</string>
-    <string name="common_color_picker">颜色选择器</string>
-    <string name="date_and_time">日期和时间</string>
-    <string name="jump_to_bottom">跳转到底部</string>
-    <string name="quote">引用</string>
-    <string name="heading">标题</string>
-    <string name="heading_1">1 级标题</string>
-    <string name="heading_2">2 级标题</string>
-    <string name="heading_3">3 级标题</string>
-    <string name="heading_4">4 级标题</string>
-    <string name="heading_5">5 级标题</string>
-    <string name="heading_6">6 级标题</string>
-    <string name="bold">粗体</string>
-    <string name="italic">斜体</string>
-    <string name="highlighted">突出高亮</string>
-    <string name="strikeout">删除线</string>
-    <string name="inline_code">行内代码</string>
-    <string name="horizontal_line">水平线</string>
-    <string name="toggle_done">切换完成</string>
-    <string name="link_color">链接颜色</string>
-    <string name="add_context">添加情境</string>
-    <string name="add_project">添加项目</string>
-    <string name="archive_completed_tasks">存档已完成的任务</string>
-    <string name="create_new_file_or_folder">创建一个新的文件或文件夹</string>
-    <string name="choose_format">选择格式</string>
-    <string name="clear_selection">清除选项</string>
-    <string name="selected">已选择</string>
-    <string name="back">后退</string>
-    <string name="expand_collapse">展开/收起</string>
-    <string name="essential">基础设置</string>
-    <string name="append_human_readable_uuid_to_new_tasks">将人类可读的 UUID 附加到新任务</string>
-    <string name="action_order">操作顺序</string>
-    <string name="toggle_action_visibility">切换操作可见性</string>
-    <string name="load_default_settings">加载默认设置</string>
-    <string name="drag">拖动</string>
-    <string name="created">已创建</string>
-    <string name="file_encryption_password">文件加密密码</string>
-    <string name="no_password_set_cannot_encrypt_decrypt">没有设置密码，不能加密或解密。\n请前往设置 -&gt; 常规 -&gt; 密码来设置密码。</string>
-    <string name="encrypt_file_content">加密文件内容</string>
-    <string name="utf8_with_bom">带 BOM 的 UTF-8</string>
-    <string name="could_not_encrypt_file_content_the_file_was_not_saved">无法加密文件内容。文件未保存。</string>
-    <string name="could_not_decrypt_file_content_wrong_password_or_is_the_file_maybe_not_encrypted">无法解密文件内容。 您是否使用了错误的密码？ 文件是否真的使用 Markors AES 加密方式进行加密？</string>
-    <string name="password_already_set_setting_a_new_password_will_overwrite">密码已设置。 设置新密码将覆盖现有密码，如果您忘记密码，您可能无法再访问文件。</string>
-    <string name="code_block">代码块</string>
-    <string name="add_completion_date">添加完成日期</string>
-    <string name="add_completion_date_for_todos_when_marking_them_as_done">当待办事项标记为已完成时添加完成日期</string>
-    <string name="file_description_format">文件描述格式</string>
-    <string name="file_description_format_dialog">文件浏览器中每个文件下的描述格式。 遵循 Android 的 SimpleDateFormat 规则，添加 FS 用于显示文件大小。 留空以使用您的语言环境的默认格式。\n\n输入示例：\nFS yyyy MMM dd hh:mm:ss aa\n输出格式：\n30KB 2020 Mar 20 11:24:52 PM</string>
-    <string name="loading_default_value">正在加载默认值</string>
-    <string name="file_settings">文件设置</string>
-    <string name="search_and_replace">搜索/替换</string>
-    <string name="search_for">搜索</string>
-    <string name="replace_with">替换为</string>
-    <string name="replace_once">替换 (1)</string>
-    <string name="replace_all">全部替换</string>
-    <string name="matches">匹配</string>
-    <string name="search_replace_pattern_error_message">搜索或替换模式错误。</string>
-    <string name="backup_settings">备份设置</string>
-    <string name="restore_settings">还原设置</string>
-    <string name="failed_to_create_backup">创建备份失败</string>
-    <string name="export_settings_to_json_file">导出设置到 JSON 文件</string>
-    <string name="import_settings_from_backup_json_file_on_success_the_app_is_restarted">从备份 JSON 文件导入设置。成功后，应用将重启。</string>
-    <string name="failed_to_restore_settings_from_backup">从备份恢复设置失败</string>
-    <string name="newline_is_new_paragraph">新增行 = 新建段落</string>
-    <string name="search_in_content">在内容中搜索</string>
-    <string name="max_search_depth">搜索深度</string>
-    <string name="ignore_list">忽略名单</string>
-    <string name="do_not_search_specified_files_and_folders">不搜索指定的文件和文件夹。\n使用换行作为分隔符。\n对于确切的目录名请使用引号：\"Test\"。\n或使用正则表达 \'^[.].*\'\n示例：^\\..*\n\"test\"\n\"Test\"\n.*secret.*\n.*BACKUP.*\n.*.ini</string>
-    <string name="regex_search">正则表达式搜索</string>
-    <string name="case_sensitive">区分大小写</string>
-    <string name="stop_search_after_first_match">第一次匹配后停止搜索</string>
-    <string name="regex_can_not_be_compiled">无法编译正则表达式</string>
-    <string name="keep_both">两者都保留</string>
-    <string name="skip">跳过</string>
-    <string name="overwrite">覆盖</string>
-    <string name="keep_both_all">两者都保留 (全部)</string>
-    <string name="skip_all">跳过 (全部)</string>
-    <string name="overwrite_all">覆盖 (全部)</string>
-    <string name="copy_move_conflict_message">\'%1$s\' 已存在于 %2$s</string>
-    <string name="additional_contexts_and_projects">其他情境和项目</string>
-    <string name="enter_space_seperated_contexts_and_projects_these_will">输入以空格分隔的 @情境 和 +项目 标签 。 您可以始终在 todo.txt 的插入对话框中看见这些选项。</string>
-    <string name="infinite">不限</string>
-    <string name="browse_by_project">按项目浏览</string>
-    <string name="browse_by_context">按情境浏览</string>
-    <string name="insert_project">插入项目</string>
-    <string name="insert_context">插入情境</string>
-    <string name="browse_todo">浏览待办事项</string>
-    <string name="browse_by_priority">按优先级浏览</string>
-    <string name="browse_by_due_date">按截止时间浏览</string>
-    <string name="due_overdue">到期时间</string>
-    <string name="due_today">今日到期</string>
-    <string name="due_future">将来到期</string>
-    <string name="completed">已完成</string>
-    <string name="advanced_filtering">高级筛选</string>
-    <string name="match_any">匹配任意</string>
-    <string name="match_all">匹配全部</string>
-    <string name="dynamic_notebook_root_links">动态搜索笔记本根目录</string>
-    <string name="search_dynamically_for_notebook_root">为了跟随维基链接，动态地搜索notbook.zim文件来识别当前笔记本的根目录。 如果您使用多个zim笔记本或者应用程序中的笔记本目录与您的zim笔记本不对应，请选中此项。</string>
-    <string name="share_into_format_prefix_for_text_shared">分享到 Markor 的文本的格式/前缀。遵循 Android 的 SimpleDateFormat 规则。\n\n使用占位符 {{text}} 来放置分享的文本。如果未指定，分享的文本将附加在最后，格式为前缀。</string>
-    <string name="share_into_format">分享到 - 格式</string>
-    <string name="attachment_folder_name">附件文件夹名</string>
-    <string name="attachment_folder_name_desc">当前文件夹下保存附件的子文件夹。如留空，附件将被保存在当前文件夹中。</string>
-    <string name="auto_format">自动格式</string>
-    <string name="insert_snippet">插入片段</string>
-    <string name="snippet_directory">文本片段/模板目录</string>
-    <string name="error_could_not_open_file">错误：无法打开文件。</string>
-    <string name="document_error_clip">出现错误：文本已复制到剪贴板。</string>
-    <string name="wont_save_min_length">字符数不到 %d 的文件不会自动保存防止数据丢失。</string>
-    <string name="advanced_filtering_help"><![CDATA[<small><a href="https://www.github.com/gsantner/markor/discussions/1940">高级过滤语法</a></small>]]></string>
-    <string name="filter">过滤器</string>
-    <string name="text_case">文本大小写</string>
-    <string name="toggle_case">切换大小写 (Case→CASE→case)</string>
-    <string name="switch_case">反转大小写 (CaSe→cAsE)</string>
-    <string name="capitalize_words">大写词首字母 (a note→A Note)</string>
-    <string name="capitalize_sentences">大写句首字母 (a note→A note)</string>
-    <string name="use_tab_to_indent">使用 Tab 键缩进行</string>
-    <string name="folder_local">本地文件夹</string>
+    <string name="settings">è®¾ç½®</string>
+    <string name="light">æµè²</string>
+    <string name="dark">æ·±è²</string>
+    <string name="delete">å é¤</string>
+    <string name="appearance">å¤è§</string>
+    <string name="rename">éå½å</string>
+    <string name="confirm_delete">ç¡®è®¤å é¤</string>
+    <string name="do_you_really_want_to_delete_this_witharg">æ¨ç¡®å®è¦å é¤ %s åï¼</string>
+    <string name="confirm_overwrite">ç¡®è®¤è¦ç</string>
+    <string name="file_already_exists_overwerite">æä»¶å·²å­å¨ï¼æ¯å¦è¦çï¼</string>
+    <string name="browse_filesystem">æµè§æä»¶ç³»ç»</string>
+    <string name="title">æ é¢</string>
+    <string name="empty_directory">ç©ºç®å½</string>
+    <string name="enter_name_of_folder">è¾å¥æä»¶å¤¹å</string>
+    <string name="create_folder">æ°å»ºæä»¶å¤¹</string>
+    <string name="create_new_document">æ°å»ºææ¡£</string>
+    <string name="move">ç§»å¨</string>
+    <string name="info">ä¿¡æ¯</string>
+    <string name="file_folder_already_exists_please_use_a_different_name">å·²å­å¨ååæä»¶/æä»¶å¤¹ï¼è¯·æ¢ä¸ä¸ªåå­è¯è¯ã</string>
+    <string name="import_from_device">ä»æ¬è®¾å¤å¯¼å¥</string>
+    <string name="import_">å¯¼å¥</string>
+    <string name="append_to_witharg">éå å° %s</string>
+    <string name="select_folder">éæ©æä»¶å¤¹</string>
+    <string name="edit">ç¼è¾</string>
+    <string name="search_documents">æç´¢ææ¡£</string>
+    <string name="share_to_arrow" tools:ignore="TypographyEllipsis">åäº«å°&#8230;</string>
+    <string name="share">åäº«</string>
+    <string name="search">æç´¢</string>
+    <string name="previous_match">ä¸ä¸ä¸ªå¹é</string>
+    <string name="next_match">ä¸ä¸ä¸ªå¹é</string>
+    <string name="display_converted_markup">æ¾ç¤ºè½¬æ¢åçæ è®°</string>
+    <string name="editor">ç¼è¾å¨</string>
+    <string name="folders">æä»¶å¤¹</string>
+    <string name="files">æä»¶</string>
+    <string name="document">ææ¡£</string>
+    <string name="documents">ææ¡£</string>
+    <string name="html_as_plaintext">HTML (æ¾ç¤ºä¸ºçº¯ææ¬)</string>
+    <string name="document_editor_font">ææ¡£ç¼è¾å¨å­ä½</string>
+    <string name="theme">ä¸»é¢</string>
+    <string name="open_existing_files_in_view_mode">å¨æ¥çæ¨¡å¼ä¸­æå¼ç°ææä»¶</string>
+    <string name="about">å³äº</string>
+    <string name="plaintext">çº¯ææ¬</string>
+    <string name="file">æä»¶</string>
+    <string name="image">å¾ç</string>
+    <string name="font_size">å­å·</string>
+    <string name="render_rtl_language">æ¸²æä»å³å¾å·¦è¯»çè¯­è¨</string>
+    <string name="error_cannot_create_notebook_dir__appspecific">éè¯¯ï¼æ æ³åå»ºç¬è®°æ¬ç®å½</string>
+    <string name="last_modified_witharg">ä¸æ¬¡ä¿®æ¹ï¼%s</string>
+    <string name="last_modified">æåä¿®æ¹</string>
+    <string name="select_this_folder">éæ©è¿ä¸ªæä»¶å¤¹</string>
+    <string name="select">éæ©</string>
+    <string name="select_all">å¨é</string>
+    <string name="create">æ°å»º</string>
+    <string name="select_entries">éæ© è¾å¥æå­</string>
+    <string name="one_item_selected">å·²éä¸­ä¸é¡¹</string>
+    <string name="items_selected_witharg" tools:ignore="PluralsCandidate">å·²éæ© %d ä¸ªé¡¹ç®</string>
+    <string name="hide_statusbar_at_this_view">å¨æ­¤è§å¾ä¸­éèç¶ææ </string>
+    <string name="hide_statusbar">éèç¶ææ </string>
+    <string name="name">åç§°</string>
+    <string name="url_or_path">URL / è·¯å¾</string>
+    <string name="insert_link">æå¥é¾æ¥</string>
+    <string name="format_link">æ ¼å¼åé¾æ¥</string>
+    <string name="insert_image">æå¥å¾ç</string>
+    <string name="contributors">è´¡ç®è</string>
+    <string name="save_location">ä¿å­ä½ç½®</string>
+    <string name="saved_location_to">å·²ä¿å­å° %s</string>
+    <string name="select_storage_folder">éæ©å­å¨æä»¶å¤¹</string>
+    <string name="licenses">å¼æºåè®®</string>
+    <string name="changelog">æ´æ°æ¥å¿âââââ</string>
+    <string name="more_info">æ´å¤ä¿¡æ¯</string>
+    <string name="show_license_of_the_app">æ¾ç¤ºåºç¨çå¼æºè®¸å¯åè®®</string>
+    <string name="show_third_party_licenses">æ¾ç¤ºç¬¬ä¸æ¹è®¸å¯</string>
+    <string name="language_change_restart_description">æ´æ¹è¯­è¨ï¼éå¯åºç¨åçæï¼</string>
+    <string name="language">è¯­è¨</string>
+    <string name="storage_permission_required">éè¦å­å¨æéè¯»åæä»¶</string>
+    <string name="open_with">æå¼æ¹å¼</string>
+    <string name="sort_by">æåºæ¹å¼</string>
+    <string name="date">æ¥æ</string>
+    <string name="deleteme____1">åç§°</string>
+    <string name="size">ææä»¶å¤§å°æåº</string>
+    <string name="reverse_order">éåæåº</string>
+    <string name="contribute">è´¡ç®</string>
+    <string name="project_page">é¡¹ç®ä¸»é¡µ</string>
+    <string name="press_back_again_to_exit">åæä¸æ¬¡éåº</string>
+    <string name="exit">éåº</string>
+    <string name="undo">æ¤é</string>
+    <string name="redo">éå</string>
+    <string name="more">æ´å¤</string>
+    <string name="notebook">ç¬è®°æ¬</string>
+    <string name="help">å¸®å©</string>
+    <string name="todo_list">å¾åæ¸å</string>
+    <string name="task">ä»»å¡</string>
+    <string name="context">æå¢</string>
+    <string name="list">åè¡¨</string>
+    <string name="priority">ä¼åçº§</string>
+    <string name="history">åå²</string>
+    <string name="sync">åæ­¥</string>
+    <string name="search_or_custom">æç´¢ / èªå®ä¹</string>
+    <string name="save">ä¿å­</string>
+    <string name="update">æ´æ°</string>
+    <string name="clear">æ¸ç©º</string>
+    <string name="due_date">æªæ­¢æ¥æ</string>
+    <string name="current_date">å½åæ¥æ</string>
+    <string name="archive">å½æ¡£</string>
+    <string name="add_task">æ·»å ä»»å¡</string>
+    <string name="add_x_witharg">æ·»å  %s</string>
+    <string name="document_to_be_loaded_and_saved_as_witharg">è¯¥æä»¶å°è¢«ä¿å­ä¸º \"%s\"</string>
+    <string name="refresh">å·æ°</string>
+    <string name="create_shortcut">åå»ºå¿«æ·æ¹å¼</string>
+    <string name="tried_to_create_shortcut_for_this_notice">å·²å°è¯åæ¨çä¸»å±å¹æ·»å å¿«æ·æ¹å¼ãè¯·æ³¨æé¨åå¯å¨å¨å¯è½ä¸æ¯ææ­¤æä½ã</string>
+    <string name="file_not_in_save_path_do_import_notice__appspecific">æéæä»¶ä¸å¨æ¬åºç¨çç¬è®°æ¬ç®å½ä¸­ãè¦å°å¶å¤å¶å°å½åæä»¶å¤¹åï¼è¿ä¼è¦çä»»ä½å·æç¸ååç§°çç°ææä»¶ã</string>
+    <string name="file_not_in_current_folder_do_copy__appspecific">æä»¶ä¸å¨å½åæä»¶å¤¹ä¸­ãè¦å°å¶å¤å¶å°å½åæä»¶å¤¹åï¼è¿ä¼è¦çä»»ä½å·æç¸ååç§°çç°ææä»¶ã</string>
+    <string name="files_and_folders">æä»¶ä¸æä»¶å¤¹</string>
+    <string name="document_browser">ææ¡£æµè§å¨</string>
+    <string name="file_browser">æä»¶æµè§å¨</string>
+    <string name="set_due_date">è®¾ç½®æªæ­¢æ¥æ</string>
+    <string name="insert_replace_date">æå¥æ¥æ</string>
+    <string name="create_note" needed="false">æ°å»ºç¬è®°</string>
+    <string name="special_documents" needed="false">ç¹æ®æä»¶</string>
+    <string name="keep_screen_on" needed="false">ä¿æå±å¹å¼å¯</string>
+    <string name="disallow_screenshots">ç¦æ­¢æªå±</string>
+    <string name="back_to_previous_folder" needed="false">è¿åä¸ä¸ä¸ªæä»¶å¤¹</string>
+    <string name="app_settings" needed="false">åºç¨è®¾ç½®</string>
+    <string name="editor_settings" needed="false">ç¼è¾å¨è®¾ç½®</string>
+    <string name="remember_last_folder_location_on_startup" needed="false">è®°ä½ä¸æ¬¡éåºçä½ç½®</string>
+    <string name="number_of_files_witharg" needed="false">æä»¶æ°éï¼%d</string>
+    <string name="app_wide">å¨å±</string>
+    <string name="main_view">ä¸»çé¢</string>
+    <string name="overall_theme_used_in_app">ä½ç¨äºæ´ä¸ªåºç¨çä¸»é¢</string>
+    <string name="remember_last_directory">è®°ä½ä¸æ¬¡ä½¿ç¨çç®å½</string>
+    <string name="syntax_highlighting">è¯­æ³é«äº®</string>
+    <string name="highlighting_delay">è¯­æ³é«äº®å»¶æ¶</string>
+    <string name="highlighting_delay_lower_value_more_battery_drain_description__appspecific">å·æ°é«äº®çå»¶è¿æ¶é´ï¼ä»¥æ¯«ç§ä¸ºåä½ï¼ã è¾ä½çå¼å°æ´æ©å¼å§é«äº®ï¼ä½å®ä¼èå°½æ¨ççµæ± ï¼å¹¶å¯è½ææ¢æ§è®¾å¤ä¸çåºç¨ç¨åºéåº¦ã</string>
+    <string name="highlighting_enabled_or_not__appspecific">æ§å¶æ¯å¦åºçªåºæ¾ç¤ºè¾å¥çææ¬</string>
+    <string name="control_font_size_in_editor">è°æ´ç¼è¾å¨ä¸­æå­çå­ä½å¤§å°</string>
+    <string name="textactions_show_useful_actions_description__appspecific">å¨åºé¨æ¾ç¤ºä¸æå¿«æ·æé®ãè¿äºææ¬æä½æé®å¯ä»¥ä¿®æ¹æå­æçå¯¹æå­è¿è¡å¶ä»æä½ã</string>
+    <string name="load_last_opened_folder_at_startup">å¯å¨æ¶å è½½ä¸æ¬¡æå¼çç®å½</string>
+    <string name="format">æ ¼å¼</string>
+    <string name="contexts">æå¢</string>
+    <string name="project">é¡¹ç®</string>
+    <string name="projects">é¡¹ç®</string>
+    <string name="none">æ </string>
+    <string name="other">å¶å®</string>
+    <string name="empty_file">ç©ºæä»¶</string>
+    <string name="break_page_pdf_print">åé¡µ (PDF/æå°)</string>
+    <string name="underline">ä¸åçº¿</string>
+    <string name="underline_hex_color_wether_or_not_to_description__appspecific">æ¯å¦æ ¹æ®é¢è²å¨åå­è¿å¶é¢è²ä»£ç ä¸åçº¿</string>
+    <string name="underline_hex_color_codes">ä¸åçº¿åå­è¿å¶é¢è²ä»£ç </string>
+    <string name="insert_current_date_when_starting_new_task">å¨å¼å§ä¸é¡¹æ°ä»»å¡æ¶èªå¨æå¥å½åæ¥æ</string>
+    <string name="tasks_with_todays_date">å¸¦æä»å¤©æ¥æçä»»å¡</string>
+    <string name="append_contexts_and_projects">éå æå¢ä¸é¡¹ç®</string>
+    <string name="append_contexts_and_projects_on_end_of_task">ä½¿ç¨å¯¹åºçææ¬æä½æ¶ï¼å¨ä»»å¡æ«å°¾éå æå¢åé¡¹ç®</string>
+    <string name="rtl_rendering">ä»å³åå·¦æ¸²æ</string>
+    <string name="highlight_line_ending">é«äº®è¡æ«</string>
+    <string name="highlight_line_ending_if_two_or_more_spaces">çªåºæ¾ç¤ºåå«ä¸¤ä¸ªæå¤ä¸ªç©ºæ ¼çè¡æ«å°¾çç©ºæ ¼</string>
+    <string name="use_monospace_for_code">ä¸ºä»£ç ä½¿ç¨ç­å®½å­ä½</string>
+    <string name="disable_code_block_highlight">åç¨ä»£ç åé«äº®</string>
+    <string name="auto_renumber_ordered_list">èªå¨éæ°ç¼å·çæåºåè¡¨</string>
+    <string name="auto_renumber_ordered_list_slowdown">æ­¤éé¡¹å¯è½ä¼å½±ååºç¨æ§è½ã</string>
+    <string name="use_different_fonttype_slow_down">ç¨ä¸åçå­ä½æ¾ç¤ºä»£ç ãå¯ç¨åå¯è½ä¼å¤§å¹å½±åæ§è½ã</string>
+    <string name="general">éç¨</string>
+    <string name="resources">èµæº</string>
+    <string name="space_between_lines_in_percent">è¡é´è·ç¾åæ¯</string>
+    <string name="line_spacing">è¡é´è·</string>
+    <string name="archive_does_move_done_tasks">å°å®æçä»»å¡ç§»å¨è³åç®å½ä¸çæå®æä»¶</string>
+    <string name="sort_tasks_by_selected_order">ææéé¡ºåºå¯¹ä»»å¡è¿è¡æåº</string>
+    <string name="special_key">ç¹æ®æé®</string>
+    <string name="asciidoc_special_key">ç¹æ® AsciiDoc åå®¹</string>
+    <string name="key_page_up">ä¸ä¸é¡µ (Page Up)</string>
+    <string name="key_page_down">ä¸ä¸é¡µ (Page Down)</string>
+    <string name="key_pos_1">è¡é¦ (Home é®)</string>
+    <string name="key_pos_end">è¡æ« (End é®)</string>
+    <string name="key_pos_1_document">æé¦</string>
+    <string name="key_pos_end_document">ææ«</string>
+    <string name="move_text_one_line_up">ä¸ç§»è¡</string>
+    <string name="move_text_one_line_down">ä¸ç§»è¡</string>
+    <string name="start_new_line_below">å¼å§æ°è¡</string>
+    <string name="select_current_line">éä¸­å½åè¡</string>
+    <string name="key_ctrl_a">å¨é (Ctrl + A)</string>
+    <string name="key_tab">å¶è¡¨ç¬¦</string>
+    <string name="zero_width_space">é¶å®½åº¦ç©ºæ ¼</string>
+    <string name="em_space">å¨è§ç©ºæ ¼ (&amp;emsp;)</string>
+    <string name="start_on_bottom">ä»ææ«å¼å§</string>
+    <string name="start_on_bottom_when_loading_document">è½½å¥æä»¶æ¶å°åæ ç½®äºæä»¶æ«å°¾å¤</string>
+    <string name="unordered_list_character">æ åºåè¡¨æ ç¤ºå­ç¬¦</string>
+    <string name="character_to_start_items_of_unordered_list_with">ç¨äºè¡¨ç¤ºæ åºåè¡¨çå­ç¬¦</string>
+    <string name="unordered_list_char_dash">ç­ç ´æå· (-)</string>
+    <string name="unordered_list_char_asterisk">æå· (*)</string>
+    <string name="unordered_list_char_plus">å å· (+)</string>
+    <string name="filemanager_doesnot_supply_required_data__appspecific">Portal åªè½ç¼è¾æ¬å°ãç¦»çº¿å¯ç¨çææ¡£ï¼ä¸ä¸æ¯æä¸æä¾å®æ´æä»¶è·¯å¾çæä»¶ç®¡çå¨ã</string>
+    <string name="file_does_not_exist_and_cant_be_created">æä»¶æç®å½ä¸å­å¨ä¸æ æ³åå»º</string>
+    <string name="permissions">æé</string>
+    <string name="permission_paths_revert">æ¢å¤ä¸ºé»è®¤è·¯å¾ï¼</string>
+    <string name="permission_not_granted">æªæäºæé</string>
+    <string name="sync_to_local_folder_notice">æ³¨æï¼åæ­¥åºç¨å¯è½ä¼å°æä»¶æ¾ç½®å¨èªå®ä¹æä»¶å¤¹ä¸­ï¼è¯·ç¸åºå°æ´æ¹ Portal çææ¡£æä»¶å¤¹æå¨å¦ä¸ä¸ªæä»¶ç®¡çå¨ä¸­æå¼å®ä»¬ã</string>
+    <string name="vertical_alignment">åç´å¯¹é½</string>
+    <string name="horizontal_alignment">æ°´å¹³å¯¹é½</string>
+    <string name="default_">é»è®¤</string>
+    <string name="left">å·¦ç«¯</string>
+    <string name="right">å³ç«¯</string>
+    <string name="top">é¡¶ç«¯</string>
+    <string name="bottom">åºç«¯</string>
+    <string name="center">å±ä¸­</string>
+    <string name="actionbutton_spacing">å¿«æ·é®é´è·</string>
+    <string name="horizontal_space_between_actionbuttons">å¿«æ·é®ä¹é´çæ°´å¹³é´è·</string>
+    <string name="center_text">å±ä¸­æå­</string>
+    <string name="edit_text_in_center_of_screen">å¨å±å¹ä¸­å¤®ç¼è¾ææ¬</string>
+    <string name="clipboard">åªåæ¿</string>
+    <string name="select_existing_document">éæ©å·²æææ¡£</string>
+    <string name="select_create_document">éæ©æåå»ºææ¡£</string>
+    <string name="select_create_folder">éæ©æåå»ºæä»¶å¤¹</string>
+    <string name="open_source_licenses">å¼æºåè®®</string>
+    <string name="rate_this_app">è¯ä»·æ¬åºç¨</string>
+    <string name="translate">ç¿»è¯</string>
+    <string name="more_info_and_help">æ´å¤ä¿¡æ¯ä¸å¸®å©</string>
+    <string name="report_bugs">æ¥å bug</string>
+    <string name="do_you_have_a_question_or_problem">å­å¨çé®æé®é¢åï¼</string>
+    <string name="join_community">å å¥ç¤¾åº</string>
+    <string name="bug_reports_suggest_improvements">ç»åºåé¦ï¼æ¥åé®é¢ï¼ææåºæ¹è¿å»ºè®®</string>
+    <string name="help_translating_this_app">ç¿»è¯æ¬åºç¨</string>
+    <string name="source_code">æºä»£ç </string>
+    <string name="project_license">é¡¹ç®å¼æºåè®®</string>
+    <string name="contribute_code_to_this_project_anybody_welcome">ä¸ºæ¬é¡¹ç®è´¡ç®ä»£ç ãæä»¬æ¬¢è¿ææäººåä¸è¿æ¥ï¼åæ¬æ°æ</string>
+    <string name="project_team">é¡¹ç®å¢é</string>
+    <string name="community">ç¤¾åº</string>
+    <string name="contributors_public_add_yourself_description">æ¾ç¤ºè´¡ç®èä¿¡æ¯ãè´¡ç®èå¯èªè¡éæ©æ¯å¦è¢«æ·»å å°è¿éã</string>
+    <string name="descending">éåºæåº</string>
+    <string name="ascending">ååºæåº</string>
+    <string name="disable_spelling_underline">åç¨è¯­æ³æ£æ¥</string>
+    <string name="spellcheck_keyboard_suggestion_stay_red_underline_vanishes">ä¿çè¾å¥æ³å»ºè®®çåæ¶ï¼ç§»é¤èªå¨çº éçä¸åçº¿</string>
+    <string name="location">ä½ç½®</string>
+    <string name="text_lines">ææ¬è¡æ°</string>
+    <string name="text_characters">æå­ç¬¦å·</string>
+    <string name="text_words">æå­è¯</string>
+    <string name="directory">ç®å½</string>
+    <string name="recently_viewed_documents">æè¿ææ¡£</string>
+    <string name="details">ç»è</string>
+    <string name="calendar">æ¥å</string>
+    <string name="warning_disallowed_sd_access">è­¦åï¼ åºç¨æ²¡æä¿å­æ­¤æä»¶çæéï¼æææ´æ¹é½å°ä¸¢å¤±ã æ æ³è§£å³é®é¢æç¡®è®¤æäºåå®¹ï¼Android æç»æ­¤å¤çä»»ä½è®¿é®ã</string>
+    <string name="error_picture_selection">æ²¡æéåç§ç</string>
+    <string name="gallery_picture">ä»ç¸åéå</string>
+    <string name="camera_picture">ç¸æº</string>
+    <string name="enable_undo_and_redo_be_patient">å¯ç¨æ¤æ¶åéåæä½ã åªéåé«çº§ä½¿ç¨ï¼è¯·èå¿ãä¸è¦å é¤éè¦çä¸è¥¿ã å³é­å¹¶æå¼ç¼è¾å¨ä»¥æ¸é¤åå²è®°å½ã</string>
+    <string name="description">æè¿°</string>
+    <string name="edit_picture">ç¼è¾å¾ç</string>
+    <string name="math">å¯ç¨æ°å­¦å¬å¼æ¸²æ</string>
+    <string name="enter_yaml_front_matter_attributes_to_show">å¨å·²æµè§ææ¡£çé¡¶é¨æ¾ç¤ºè¾å¥ç YAML Front Matter å±æ§ãä»¥éå·åéè¾å¥çå³é®è¯ãçç©ºè¡¨ç¤ºæ æä½¿ç¨ \'*\' è¡¨ç¤ºææã\n\nå¨ææ¡£ä¸­å¦æå®ä¹äºä»»ä½å±æ§ (ä¾å¦ title: \'Hello\')ï¼å¹¶ä¸ä½ çææ¡£ä¸­ä¹å«æ {{ post.title }}ï¼é£ä¹è¯¥å±æ§å°è¢«æ¿æ¢ãä½ å¯ä»¥ä½¿ç¨ä»¥ä¸æ¹å¼èªå®ä¹ Front Matter æ é¢ã</string>
+    <string name="table_of_contents">ç®å½</string>
+    <string name="miscellaneous">æé¡¹è®¾ç½®</string>
+    <string name="prefer_view">é¦éè§å¾</string>
+    <string name="no_calendar_app_is_installed">æ²¡æå®è£æ¥ååºç¨ï¼</string>
+    <string name="popular_documents">å¸¸ç¨ææ¡£</string>
+    <string name="color">é¢è²</string>
+    <string name="basic_color_scheme">åºæ¬é¢è²æ¹æ¡</string>
+    <string name="background_foreground_color_in_editor_works_dark_light">æ¹åææ¬ç¼è¾å¨çèæ¯è²ååæ¯è²ãéåºç¨ä¸»é¢è°æ´å æ­¤å¨æäº®åé»æä¸»é¢ä¸­å¯ç¨ãè¯­æ³é«äº®é¢è²ä¿æä¸åã</string>
+    <string name="preset">é¢è®¾å¼</string>
+    <string name="foreground">åæ¯</string>
+    <string name="background">èæ¯</string>
+    <string name="set_foreground_or_background_color_hexcolor_also_possible">è®¾ç½®ææ¬çåæ¯è²åèæ¯è²åï¼æå¥åå­è¿å¶é¢è²ä»£ç ä¹å¯ä»¥ã</string>
+    <string name="type">æä»¶ç±»å</string>
+    <string name="folder">æä»¶å¤¹</string>
+    <string name="folder_is_created_without_extension">- åå»ºæä»¶å¤¹æ¶ä¸ä¼å«ææä»¶æ©å±å</string>
+    <string name="keep_existing_file">- æä»¶åæä»¶å¤¹ä¸ä¼è¢«è¦ç</string>
+    <string name="multiple_windows">å¤çªå£</string>
+    <string name="font">å­ä½</string>
+    <string name="open_new_documents_always_in_new_window">å§ç»å¨åç¬ççªå£ä¸­æå¼ææ¡£ãä½¿ç¨è®¾å¤ç \"æè¿\" é®è¿è¡åæ¢ã</string>
+    <string name="enter_or_select_format">è¾å¥æéæ©æ ¼å¼</string>
+    <string name="pick_date">éæ©æ¥æ</string>
+    <string name="pick_time">éæ©æ¶é´</string>
+    <string name="get_format_instead_date_or_time">ä»çææ ¼å¼, èä¸æ¯æ¥æææ¶é´</string>
+    <string name="use_current_date_and_time">ä½¿ç¨å½åæ¥æ &amp; æ¶é´</string>
+    <string name="result">ç»æ</string>
+    <string name="just_time">ä»æ¶é´</string>
+    <string name="just_date">ä»æ¥æ</string>
+    <string name="last_used">ä¸æ¬¡ä½¿ç¨</string>
+    <string name="my_note">æçç¬è®°</string>
+    <string name="close">å³é­</string>
+    <string name="cancel">åæ¶</string>
+    <string name="app_start_tab">åºç¨ç¨åºå¯å¨éé¡¹å¡</string>
+    <string name="tab_to_select_at_start">å¯å¨åºç¨æ¶éæ©çéé¡¹å¡</string>
+    <string name="swipe_to_change_mode">æ»å¨ä»¥æ´æ¹æ¨¡å¼</string>
+    <string name="swipe_to_change_to_edit_or_view_mode">æ»å¨ä»¥åæ¢ç¼è¾ææ¥çæ¨¡å¼(å½åæ¨¡å¼ç¸å)</string>
+    <string name="folder_first">æä»¶å¤¹å¨å</string>
+    <string name="go_to">è½¬å°</string>
+    <string name="appdata_public">åºç¨æ°æ®(å¬å±)</string>
+    <string name="appdata_private">åºç¨æ°æ®(ç§æ)</string>
+    <string name="appdata_sdcard">åºç¨æ°æ®ï¼SD å¡ï¼</string>
+    <string name="internal_storage">åé¨å­å¨</string>
+    <string name="open_the_document_from_main_view">æ¨å¯ä»¥ä»åºé¨ä¸»è§å¾ãæä»¶æµè§å¨æå¯å¨å¨æå¼ææ¡£ãè¿æä¸ä¸ªéé¡¹å¯ä»¥éå åäº«å° Portal çææ¬ã</string>
+    <string name="notebook_is_the_home_of_your_files">ç¬è®°æ¬æ¯ç¨åºå¯å¨æ¶ Portal å¨æä»¶æµè§å¨ä¸­å è½½çæä»¶å¤¹ãå®æ¯ä½ çæä»¶çä¸»æä»¶å¤¹ã</string>
+    <string name="quicknote_is_the_fastest_option_to_write_down_notes">QuickNote æ¯åä¸ç¬è®°æå¿«éæ©ãå®æ¯ä¸ä¸ªé»è®¤ä½ç½®ä¸º &gt;Notebook/QuickNote.md&lt; ç Markdown æ ¼å¼çæä»¶ï¼æ¨å¯ä»¥å¨è®¾ç½®ä¸­è®¾ç½®ä¸ä¸ªèªå®ä¹æä»¶è·¯å¾ã</string>
+    <string name="todo_is_the_easiest_way_">ä½¿ç¨ ToDo ç®¡çä½ çä»»å¡ãå®æ¯ todo.txt æ ¼å¼çæä»¶ï¼é»è®¤ä½ç½®æ¯ &gt;Notebook/todo.txt&lt;ï¼ä½ å¯ä»¥å¨è®¾ç½®ä¸­èªå®ä¹æä»¶è·¯å¾ã</string>
+    <string name="navigationbar_color">å¯¼èªæ é¢è²</string>
+    <string name="black">é»è²</string>
+    <string name="white">ç½è²</string>
+    <string name="view">æ¥ç</string>
+    <string name="view_mode">æ¥çæ¨¡å¼</string>
+    <string name="edit_mode">ç¼è¾æ¨¡å¼</string>
+    <string name="mount_storage">æè½½å­å¨</string>
+    <string name="application_needs_access_to_storage_mount_it">è®¿é®æ­¤å­å¨ä½ç½®éè¦æéãæè½½å­å¨ä»¥æä¾è®¿é®æéãç¡®è®¤æ­¤å¯¹è¯æ¡å°å¼¹åºçªå£ãå¨é£ééæ©å­å¨ä½ç½®ï¼ç¶åç¹æéæ©ã</string>
+    <string name="share_into">åäº«å°</string>
+    <string name="favourite">æ¶è</string>
+    <string name="favourites">æ¶è</string>
+    <string name="please_wait">è¯·ç¨å</string>
+    <string name="app_start_folder">åºç¨èµ·å§æä»¶å¤¹</string>
+    <string name="tab_width">å¶è¡¨ç¬¦å®½åº¦</string>
+    <string name="amount_of_space_for_tab">å¶è¡¨ç¬¦æ¾ç¤ºçç©ºæ ¼æ°</string>
+    <string name="selected_file_may_be_a_textfile_want_to_open_in_editor">éä¸­çæä»¶å¯è½æ¯ä¸ä¸ªçº¯ææ¬æä»¶ã æ¨è¦å¨ç¼è¾å¨ä¸­æå¼ï¼æå¨å¶ä»åºç¨ä¸­æå¼å®åï¼\n\nè¯·å¿å°è¯æå¼äºè¿å¶æä»¶ã å¦æä¸ç¡®å®ï¼è¯·ä½¿ç¨å¶ä»åºç¨æå¼ã</string>
+    <string name="list_in_recent_files">æè¿æä»¶åè¡¨</string>
+    <string name="reload">å·æ°</string>
+    <string name="wrap_words">æè¡</string>
+    <string name="line_numbers">è¡å·</string>
+    <string name="soft_break_if_not_fit_to_width_else_enable_horizontal_scrolling">å¦ææå­ä¸éåå±å¹å®½åº¦åè½¯ææ­ãå¦åå¯ç¨æ¨ªåæ»å¨ã</string>
+    <string name="recursive_search_in_location">å¨%sä¸­éå½æç´¢</string>
+    <string name="always_open_with_this_app">æ»æ¯ä½¿ç¨æ¬åºç¨æå¼</string>
+    <string name="always_open_files_with_this_app_when_list_contains_file_extension">æ»æ¯ä½¿ç¨æ¬åºç¨æå¼æ­¤åè¡¨åå«çæä»¶æ©å±åçæä»¶ï¼ä¾å¦å¦æä½ æ³ç¼è¾ç½é¡µæä»¶åæ æ©å±åçæä»¶ï¼è¯·ä½¿ç¨ \'None, .html, .css , .js\'ã</string>
+    <string name="open_file_with">æå¼æä»¶</string>
+    <string name="rotate">æè½¬</string>
+    <string name="template">æ¨¡æ¿</string>
+    <string name="send_debug_log">åéè°è¯æ¥å¿</string>
+    <string name="print_pdf">æå°/PDF</string>
+    <string name="bigger_headings">å¤§æ é¢</string>
+    <string name="increase_text_size_of_headings_according_to_level">æ ¹æ®æ é¢çº§å«(# h1, ## h2, ### h3â¦) å¢å æ é¢æå­å¤§å°</string>
+    <string name="current">å½å</string>
+    <string name="record_audio">å½å¶é³é¢</string>
+    <string name="attach">éä»¶</string>
+    <string name="attachment">éä»¶</string>
+    <string name="copy_file">å¤å¶æä»¶</string>
+    <string name="page">é¡µé¢</string>
+    <string name="experimental_features">å®éªåè½</string>
+    <string name="tools">å·¥å·</string>
+    <string name="reading">æ­£å¨è¯»å</string>
+    <string name="read">è¯»å</string>
+    <string name="table">è¡¨æ ¼</string>
+    <string name="how_much_columns_press_table_button_long_to_start_table">éè¦å¤å°åï¼é¿æè¡¨æ ¼æé®æ¥æ°å»ºä¸ä¸ªè¡¨æ ¼ (æå¥è¡¨å¤´) ï¼ç­æä»¥æ·»å ä¸è¡ã</string>
+    <string name="example_of_a_markdown_table">Markdown è¡¨æ ¼ç¤ºä¾</string>
+    <string name="delete_lines">å é¤è¡</string>
+    <string name="duplicate_lines">å¤å¶è¡</string>
+    <string name="unordered_list">æ åºåè¡¨</string>
+    <string name="ordered_list">æåºåè¡¨</string>
+    <string name="check_list">å¤éåè¡¨</string>
+    <string name="open_link">æå¼é¾æ¥</string>
+    <string name="common_color_picker">é¢è²éæ©å¨</string>
+    <string name="date_and_time">æ¥æåæ¶é´</string>
+    <string name="jump_to_bottom">è·³è½¬å°åºé¨</string>
+    <string name="quote">å¼ç¨</string>
+    <string name="heading">æ é¢</string>
+    <string name="heading_1">1 çº§æ é¢</string>
+    <string name="heading_2">2 çº§æ é¢</string>
+    <string name="heading_3">3 çº§æ é¢</string>
+    <string name="heading_4">4 çº§æ é¢</string>
+    <string name="heading_5">5 çº§æ é¢</string>
+    <string name="heading_6">6 çº§æ é¢</string>
+    <string name="bold">ç²ä½</string>
+    <string name="italic">æä½</string>
+    <string name="highlighted">çªåºé«äº®</string>
+    <string name="strikeout">å é¤çº¿</string>
+    <string name="inline_code">è¡åä»£ç </string>
+    <string name="horizontal_line">æ°´å¹³çº¿</string>
+    <string name="toggle_done">åæ¢å®æ</string>
+    <string name="link_color">é¾æ¥é¢è²</string>
+    <string name="add_context">æ·»å æå¢</string>
+    <string name="add_project">æ·»å é¡¹ç®</string>
+    <string name="archive_completed_tasks">å­æ¡£å·²å®æçä»»å¡</string>
+    <string name="create_new_file_or_folder">åå»ºä¸ä¸ªæ°çæä»¶ææä»¶å¤¹</string>
+    <string name="choose_format">éæ©æ ¼å¼</string>
+    <string name="clear_selection">æ¸é¤éé¡¹</string>
+    <string name="selected">å·²éæ©</string>
+    <string name="back">åé</string>
+    <string name="expand_collapse">å±å¼/æ¶èµ·</string>
+    <string name="essential">åºç¡è®¾ç½®</string>
+    <string name="append_human_readable_uuid_to_new_tasks">å°äººç±»å¯è¯»ç UUID éå å°æ°ä»»å¡</string>
+    <string name="action_order">æä½é¡ºåº</string>
+    <string name="toggle_action_visibility">åæ¢æä½å¯è§æ§</string>
+    <string name="load_default_settings">å è½½é»è®¤è®¾ç½®</string>
+    <string name="drag">æå¨</string>
+    <string name="created">å·²åå»º</string>
+    <string name="file_encryption_password">æä»¶å å¯å¯ç </string>
+    <string name="no_password_set_cannot_encrypt_decrypt">æ²¡æè®¾ç½®å¯ç ï¼ä¸è½å å¯æè§£å¯ã\nè¯·åå¾è®¾ç½® -&gt; å¸¸è§ -&gt; å¯ç æ¥è®¾ç½®å¯ç ã</string>
+    <string name="encrypt_file_content">å å¯æä»¶åå®¹</string>
+    <string name="utf8_with_bom">å¸¦ BOM ç UTF-8</string>
+    <string name="could_not_encrypt_file_content_the_file_was_not_saved">æ æ³å å¯æä»¶åå®¹ãæä»¶æªä¿å­ã</string>
+    <string name="could_not_decrypt_file_content_wrong_password_or_is_the_file_maybe_not_encrypted">æ æ³è§£å¯æä»¶åå®¹ã æ¨æ¯å¦ä½¿ç¨äºéè¯¯çå¯ç ï¼ æä»¶æ¯å¦ççä½¿ç¨ Portal’s AES å å¯æ¹å¼è¿è¡å å¯ï¼</string>
+    <string name="password_already_set_setting_a_new_password_will_overwrite">å¯ç å·²è®¾ç½®ã è®¾ç½®æ°å¯ç å°è¦çç°æå¯ç ï¼å¦ææ¨å¿è®°å¯ç ï¼æ¨å¯è½æ æ³åè®¿é®æä»¶ã</string>
+    <string name="code_block">ä»£ç å</string>
+    <string name="add_completion_date">æ·»å å®ææ¥æ</string>
+    <string name="add_completion_date_for_todos_when_marking_them_as_done">å½å¾åäºé¡¹æ è®°ä¸ºå·²å®ææ¶æ·»å å®ææ¥æ</string>
+    <string name="file_description_format">æä»¶æè¿°æ ¼å¼</string>
+    <string name="file_description_format_dialog">æä»¶æµè§å¨ä¸­æ¯ä¸ªæä»¶ä¸çæè¿°æ ¼å¼ã éµå¾ª Android ç SimpleDateFormat è§åï¼æ·»å  FS ç¨äºæ¾ç¤ºæä»¶å¤§å°ã çç©ºä»¥ä½¿ç¨æ¨çè¯­è¨ç¯å¢çé»è®¤æ ¼å¼ã\n\nè¾å¥ç¤ºä¾ï¼\nFS yyyy MMM dd hh:mm:ss aa\nè¾åºæ ¼å¼ï¼\n30KB 2020 Mar 20 11:24:52 PM</string>
+    <string name="loading_default_value">æ­£å¨å è½½é»è®¤å¼</string>
+    <string name="file_settings">æä»¶è®¾ç½®</string>
+    <string name="search_and_replace">æç´¢/æ¿æ¢</string>
+    <string name="search_for">æç´¢</string>
+    <string name="replace_with">æ¿æ¢ä¸º</string>
+    <string name="replace_once">æ¿æ¢ (1)</string>
+    <string name="replace_all">å¨é¨æ¿æ¢</string>
+    <string name="matches">å¹é</string>
+    <string name="search_replace_pattern_error_message">æç´¢ææ¿æ¢æ¨¡å¼éè¯¯ã</string>
+    <string name="backup_settings">å¤ä»½è®¾ç½®</string>
+    <string name="restore_settings">è¿åè®¾ç½®</string>
+    <string name="failed_to_create_backup">åå»ºå¤ä»½å¤±è´¥</string>
+    <string name="export_settings_to_json_file">å¯¼åºè®¾ç½®å° JSON æä»¶</string>
+    <string name="import_settings_from_backup_json_file_on_success_the_app_is_restarted">ä»å¤ä»½ JSON æä»¶å¯¼å¥è®¾ç½®ãæååï¼åºç¨å°éå¯ã</string>
+    <string name="failed_to_restore_settings_from_backup">ä»å¤ä»½æ¢å¤è®¾ç½®å¤±è´¥</string>
+    <string name="newline_is_new_paragraph">æ°å¢è¡ = æ°å»ºæ®µè½</string>
+    <string name="search_in_content">å¨åå®¹ä¸­æç´¢</string>
+    <string name="max_search_depth">æç´¢æ·±åº¦</string>
+    <string name="ignore_list">å¿½ç¥åå</string>
+    <string name="do_not_search_specified_files_and_folders">ä¸æç´¢æå®çæä»¶åæä»¶å¤¹ã\nä½¿ç¨æ¢è¡ä½ä¸ºåéç¬¦ã\nå¯¹äºç¡®åçç®å½åè¯·ä½¿ç¨å¼å·ï¼\"Test\"ã\næä½¿ç¨æ­£åè¡¨è¾¾ \'^[.].*\'\nç¤ºä¾ï¼^\\..*\n\"test\"\n\"Test\"\n.*secret.*\n.*BACKUP.*\n.*.ini</string>
+    <string name="regex_search">æ­£åè¡¨è¾¾å¼æç´¢</string>
+    <string name="case_sensitive">åºåå¤§å°å</string>
+    <string name="stop_search_after_first_match">ç¬¬ä¸æ¬¡å¹éååæ­¢æç´¢</string>
+    <string name="regex_can_not_be_compiled">æ æ³ç¼è¯æ­£åè¡¨è¾¾å¼</string>
+    <string name="keep_both">ä¸¤èé½ä¿ç</string>
+    <string name="skip">è·³è¿</string>
+    <string name="overwrite">è¦ç</string>
+    <string name="keep_both_all">ä¸¤èé½ä¿ç (å¨é¨)</string>
+    <string name="skip_all">è·³è¿ (å¨é¨)</string>
+    <string name="overwrite_all">è¦ç (å¨é¨)</string>
+    <string name="copy_move_conflict_message">\'%1$s\' å·²å­å¨äº %2$s</string>
+    <string name="additional_contexts_and_projects">å¶ä»æå¢åé¡¹ç®</string>
+    <string name="enter_space_seperated_contexts_and_projects_these_will">è¾å¥ä»¥ç©ºæ ¼åéç @æå¢ å +é¡¹ç® æ ç­¾ ã æ¨å¯ä»¥å§ç»å¨ todo.txt çæå¥å¯¹è¯æ¡ä¸­çè§è¿äºéé¡¹ã</string>
+    <string name="infinite">ä¸é</string>
+    <string name="browse_by_project">æé¡¹ç®æµè§</string>
+    <string name="browse_by_context">ææå¢æµè§</string>
+    <string name="insert_project">æå¥é¡¹ç®</string>
+    <string name="insert_context">æå¥æå¢</string>
+    <string name="browse_todo">æµè§å¾åäºé¡¹</string>
+    <string name="browse_by_priority">æä¼åçº§æµè§</string>
+    <string name="browse_by_due_date">ææªæ­¢æ¶é´æµè§</string>
+    <string name="due_overdue">å°ææ¶é´</string>
+    <string name="due_today">ä»æ¥å°æ</string>
+    <string name="due_future">å°æ¥å°æ</string>
+    <string name="completed">å·²å®æ</string>
+    <string name="advanced_filtering">é«çº§ç­é</string>
+    <string name="match_any">å¹éä»»æ</string>
+    <string name="match_all">å¹éå¨é¨</string>
+    <string name="dynamic_notebook_root_links">å¨ææç´¢ç¬è®°æ¬æ ¹ç®å½</string>
+    <string name="search_dynamically_for_notebook_root">ä¸ºäºè·éç»´åºé¾æ¥ï¼å¨æå°æç´¢notbook.zimæä»¶æ¥è¯å«å½åç¬è®°æ¬çæ ¹ç®å½ã å¦ææ¨ä½¿ç¨å¤ä¸ªzimç¬è®°æ¬æèåºç¨ç¨åºä¸­çç¬è®°æ¬ç®å½ä¸æ¨çzimç¬è®°æ¬ä¸å¯¹åºï¼è¯·éä¸­æ­¤é¡¹ã</string>
+    <string name="share_into_format_prefix_for_text_shared">åäº«å° Portal çææ¬çæ ¼å¼/åç¼ãéµå¾ª Android ç SimpleDateFormat è§åã\n\nä½¿ç¨å ä½ç¬¦ {{text}} æ¥æ¾ç½®åäº«çææ¬ãå¦ææªæå®ï¼åäº«çææ¬å°éå å¨æåï¼æ ¼å¼ä¸ºåç¼ã</string>
+    <string name="share_into_format">åäº«å° - æ ¼å¼</string>
+    <string name="attachment_folder_name">éä»¶æä»¶å¤¹å</string>
+    <string name="attachment_folder_name_desc">å½åæä»¶å¤¹ä¸ä¿å­éä»¶çå­æä»¶å¤¹ãå¦çç©ºï¼éä»¶å°è¢«ä¿å­å¨å½åæä»¶å¤¹ä¸­ã</string>
+    <string name="auto_format">èªå¨æ ¼å¼</string>
+    <string name="insert_snippet">æå¥çæ®µ</string>
+    <string name="snippet_directory">ææ¬çæ®µ/æ¨¡æ¿ç®å½</string>
+    <string name="error_could_not_open_file">éè¯¯ï¼æ æ³æå¼æä»¶ã</string>
+    <string name="document_error_clip">åºç°éè¯¯ï¼ææ¬å·²å¤å¶å°åªè´´æ¿ã</string>
+    <string name="wont_save_min_length">å­ç¬¦æ°ä¸å° %d çæä»¶ä¸ä¼èªå¨ä¿å­é²æ­¢æ°æ®ä¸¢å¤±ã</string>
+    <string name="advanced_filtering_help"><![CDATA[<small><a href="https://github.com/mattg101/portal/discussions">é«çº§è¿æ»¤è¯­æ³</a></small>]]></string>
+    <string name="filter">è¿æ»¤å¨</string>
+    <string name="text_case">ææ¬å¤§å°å</string>
+    <string name="toggle_case">åæ¢å¤§å°å (CaseâCASEâcase)</string>
+    <string name="switch_case">åè½¬å¤§å°å (CaSeâcAsE)</string>
+    <string name="capitalize_words">å¤§åè¯é¦å­æ¯ (a noteâA Note)</string>
+    <string name="capitalize_sentences">å¤§åå¥é¦å­æ¯ (a noteâA note)</string>
+    <string name="use_tab_to_indent">ä½¿ç¨ Tab é®ç¼©è¿è¡</string>
+    <string name="folder_local">æ¬å°æä»¶å¤¹</string>
 </resources>

@@ -2,6 +2,8 @@ package net.gsantner.markor.portal;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,6 +13,9 @@ import android.graphics.Rect;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.media.ExifInterface;
 import android.media.MediaPlayer;
 import android.media.audiofx.Visualizer;
@@ -25,6 +30,8 @@ import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Patterns;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,6 +44,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,26 +53,31 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.SwitchCompat;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
 import net.gsantner.markor.R;
+import net.gsantner.markor.format.FormatRegistry;
 import net.gsantner.markor.format.markdown.MarkdownTextConverter;
+import net.gsantner.markor.frontend.AttachLinkOrFileDialog;
 import net.gsantner.opoc.util.GsContextUtils;
 import net.gsantner.opoc.util.GsFileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,9 +99,10 @@ public class PortalInputActivity extends AppCompatActivity {
     private static final int MENU_DRAFT_FOLDER = 2;
     private static final int MENU_TOP_PREVIEW = 3;
     private static final int MENU_TOP_SAVE_DRAFT = 4;
+    private static final String DEFAULT_CLASSIFICATION = "quick-note";
     private static final List<String> DEFAULT_TAGS = Arrays.asList("idea", "todo", "reference", "meeting", "experiment");
     private static final List<String> DEFAULT_CLASSIFICATIONS = Arrays.asList(
-            "quick-note",
+            DEFAULT_CLASSIFICATION,
             "journal-entry",
             "project-thought",
             "food-diary"
@@ -101,18 +115,19 @@ public class PortalInputActivity extends AppCompatActivity {
     private final Runnable _recordPulseRunnable = new Runnable() {
         @Override
         public void run() {
-            if (_recordButton == null || !_recorder.isRecording()) {
+            if (_recordPulseRing == null || !_recorder.isRecording()) {
                 return;
             }
-            final float nextAlpha = _recordButton.getAlpha() < 0.85f ? 1f : 0.68f;
-            final float nextScale = _recordButton.getScaleX() < 1.04f ? 1.08f : 1f;
-            _recordButton.animate().alpha(nextAlpha).scaleX(nextScale).scaleY(nextScale).setDuration(320).start();
-            _handler.postDelayed(this, 360);
+            final float nextAlpha = _recordPulseRing.getAlpha() < 0.38f ? 0.92f : 0.18f;
+            final float nextScale = _recordPulseRing.getScaleX() < 1.08f ? 1.28f : 1f;
+            _recordPulseRing.animate().alpha(nextAlpha).scaleX(nextScale).scaleY(nextScale).setDuration(420).start();
+            _handler.postDelayed(this, 460);
         }
     };
 
     private DrawerLayout _drawerRoot;
     private View _mainContent;
+    private View _contentColumn;
     private MaterialToolbar _toolbar;
     private EditText _titleInput;
     private EditText _editor;
@@ -125,8 +140,12 @@ public class PortalInputActivity extends AppCompatActivity {
     private LinearLayout _classificationList;
     private View _classificationDrawer;
     private View _publishArc;
-    private MaterialButton _recordButton;
+    private View _recordPulseRing;
+    private View _swipeChevronTop;
+    private AppCompatImageButton _recordButton;
+    private MaterialButton _openClassificationButton;
     private MenuItem _previewMenuItem;
+    private ObjectAnimator _swipeChevronTopAnimator;
 
     private PortalStorage _storage;
     private PortalSessionRepository _repo;
@@ -138,10 +157,15 @@ public class PortalInputActivity extends AppCompatActivity {
     private File _activeRecordingFile;
     private long _recordStartedAt;
     private boolean _renderMarkdown;
+    private boolean _keyboardVisible;
+    private boolean _suppressEditorAutoFormat;
+    private int _editorChangeStart;
+    private int _editorChangeBefore;
+    private int _editorChangeCount;
     private float _swipeDownX;
     private float _swipeDownY;
     private final List<String> _selectedTags = new ArrayList<>();
-    private String _classificationSlug = "";
+    private String _classificationSlug = DEFAULT_CLASSIFICATION;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -182,6 +206,7 @@ public class PortalInputActivity extends AppCompatActivity {
     protected void onDestroy() {
         _handler.removeCallbacksAndMessages(null);
         _handler.removeCallbacks(_recordPulseRunnable);
+        stopSwipeHintPulse();
         if (_recorder.isRecording()) {
             _recorder.stop(false);
         }
@@ -195,6 +220,7 @@ public class PortalInputActivity extends AppCompatActivity {
     private void bindViews() {
         _drawerRoot = findViewById(R.id.portal_drawer_root);
         _mainContent = findViewById(R.id.portal_main_content);
+        _contentColumn = findViewById(R.id.portal_content_column);
         _toolbar = findViewById(R.id.portal_top_toolbar);
         _titleInput = findViewById(R.id.portal_title);
         _editor = findViewById(R.id.portal_editor);
@@ -207,20 +233,31 @@ public class PortalInputActivity extends AppCompatActivity {
         _classificationList = findViewById(R.id.portal_classification_list);
         _classificationDrawer = findViewById(R.id.portal_classification_drawer);
         _publishArc = findViewById(R.id.portal_publish_arc);
+        _recordPulseRing = findViewById(R.id.portal_record_pulse_ring);
+        _swipeChevronTop = findViewById(R.id.portal_swipe_chevron_top);
         _recordButton = findViewById(R.id.portal_action_record);
+        if (_recordButton != null) {
+            _recordButton.setBackground(null);
+            _recordButton.setPadding(0, 0, 0, 0);
+        }
 
         final MaterialButton camera = findViewById(R.id.portal_action_camera);
         final MaterialButton gallery = findViewById(R.id.portal_action_gallery);
         final MaterialButton fmtHeading = findViewById(R.id.portal_format_heading);
+        final MaterialButton fmtHeading2 = findViewById(R.id.portal_format_heading2);
         final MaterialButton fmtBold = findViewById(R.id.portal_format_bold);
         final MaterialButton fmtItalic = findViewById(R.id.portal_format_italic);
         final MaterialButton fmtBullets = findViewById(R.id.portal_format_bullets);
         final MaterialButton fmtNumbers = findViewById(R.id.portal_format_numbers);
         final MaterialButton fmtQuote = findViewById(R.id.portal_format_quote);
+        final MaterialButton fmtUnderline = findViewById(R.id.portal_format_underline);
+        final MaterialButton fmtLink = findViewById(R.id.portal_format_link);
+        final MaterialButton fmtCode = findViewById(R.id.portal_format_code);
         final MaterialButton addCustomClassification = findViewById(R.id.portal_class_add_custom);
         final MaterialButton openSettings = findViewById(R.id.portal_open_settings_button);
         final MaterialButton openClassification = findViewById(R.id.portal_open_classification_button);
         final View bottomToolbar = findViewById(R.id.portal_bottom_toolbar);
+        _openClassificationButton = openClassification;
 
         _toolbar.getMenu().clear();
         _previewMenuItem = _toolbar.getMenu().add(Menu.NONE, MENU_TOP_PREVIEW, Menu.NONE, R.string.portal_render_markdown);
@@ -250,9 +287,17 @@ public class PortalInputActivity extends AppCompatActivity {
         _toolbar.setOnClickListener(v -> startActivity(new Intent(this, PortalSessionBrowserActivity.class)));
 
         _editor.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                _editorChangeStart = start;
+                _editorChangeBefore = count;
+            }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                _editorChangeStart = start;
+                _editorChangeBefore = before;
+                _editorChangeCount = count;
+            }
             @Override public void afterTextChanged(Editable s) {
+                maybeApplyEditorAutoFormatting(s);
                 schedulePreviewRefresh();
             }
         });
@@ -266,7 +311,7 @@ public class PortalInputActivity extends AppCompatActivity {
 
         _recordButton.setOnClickListener(v -> toggleRecordingFromMainButton());
         _recordButton.setOnLongClickListener(v -> {
-            showDraftAudioPicker();
+            openAudioFilePicker();
             return true;
         });
         camera.setOnClickListener(v -> openCameraCapture());
@@ -275,14 +320,15 @@ public class PortalInputActivity extends AppCompatActivity {
         openSettings.setOnClickListener(this::showSettingsMenu);
         openClassification.setOnClickListener(v -> _drawerRoot.openDrawer(GravityCompat.END));
         fmtHeading.setOnClickListener(v -> toggleHeadingAtSelection());
+        fmtHeading2.setOnClickListener(v -> toggleHeadingAtSelection(2));
         fmtBold.setOnClickListener(v -> wrapSelection("**", "**"));
-        fmtItalic.setOnClickListener(v -> wrapSelection("_", "_"));
+        fmtItalic.setOnClickListener(v -> wrapSelection("*", "*"));
         fmtBullets.setOnClickListener(v -> prefixLines("- "));
         fmtNumbers.setOnClickListener(v -> prefixNumberedLines());
         fmtQuote.setOnClickListener(v -> prefixLines("> "));
-        attachSwipeOpener(_mainContent);
-        attachSwipeOpener(_editor);
-        attachSwipeOpener(_previewWeb);
+        fmtUnderline.setOnClickListener(v -> wrapSelection("<u>", "</u>"));
+        fmtLink.setOnClickListener(v -> formatLinkAtSelection());
+        fmtCode.setOnClickListener(v -> wrapBlock("```\n", "\n```"));
         bottomToolbar.setOnTouchListener((v, event) -> {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
@@ -292,13 +338,13 @@ public class PortalInputActivity extends AppCompatActivity {
                     return true;
                 case MotionEvent.ACTION_MOVE:
                     final float dyMove = Math.max(0f, _swipeDownY - event.getRawY());
-                    updatePublishArc(Math.min(1f, dyMove / 180f));
+                    updatePublishArc(Math.min(1f, dyMove / dp(120)));
                     return true;
                 case MotionEvent.ACTION_UP:
                     final float dx = event.getRawX() - _swipeDownX;
                     final float dy = event.getRawY() - _swipeDownY;
                     updatePublishArc(0f);
-                    if (-dy > 120f && Math.abs(dy) > Math.abs(dx) * 1.2f) {
+                    if (-dy > dp(50) && Math.abs(dy) > Math.abs(dx) * 1.15f) {
                         publishNote();
                         return true;
                     }
@@ -310,8 +356,16 @@ public class PortalInputActivity extends AppCompatActivity {
         });
 
         _previewWeb.getSettings().setJavaScriptEnabled(false);
+        _previewWeb.getSettings().setAllowFileAccess(true);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            _previewWeb.getSettings().setAllowFileAccessFromFileURLs(true);
+            _previewWeb.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        }
         _previewWeb.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
+        startSwipeHintPulse();
         refreshPreviewActionState();
+        _drawerRoot.setScrimColor(Color.TRANSPARENT);
+        expandClassificationDrawerSwipeZone();
         _drawerRoot.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
             @Override
             public void onDrawerOpened(@NonNull View drawerView) {
@@ -326,14 +380,37 @@ public class PortalInputActivity extends AppCompatActivity {
         });
 
         final View contentRoot = findViewById(android.R.id.content);
-        contentRoot.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            final Rect visible = new Rect();
-            contentRoot.getWindowVisibleDisplayFrame(visible);
-            final int heightDiff = contentRoot.getRootView().getHeight() - visible.height();
-            final boolean keyboardVisible = heightDiff > (int) (120 * getResources().getDisplayMetrics().density);
-            bottomToolbar.setVisibility(keyboardVisible ? View.GONE : View.VISIBLE);
-            _attachmentStrip.setVisibility(keyboardVisible ? View.GONE : (_attachmentList.getChildCount() > 0 ? View.VISIBLE : View.GONE));
+        ViewCompat.setOnApplyWindowInsetsListener(contentRoot, (v, insets) -> {
+            applyKeyboardState(insets.isVisible(WindowInsetsCompat.Type.ime()));
+            return insets;
         });
+        contentRoot.post(() -> {
+            final WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(contentRoot);
+            applyKeyboardState(insets != null && insets.isVisible(WindowInsetsCompat.Type.ime()));
+        });
+    }
+
+    private void applyKeyboardState(boolean keyboardVisible) {
+        if (_keyboardVisible == keyboardVisible) {
+            return;
+        }
+        _keyboardVisible = keyboardVisible;
+        if (_attachmentStrip != null) {
+            _attachmentStrip.setVisibility((_renderMarkdown || keyboardVisible) ? View.GONE : (_attachmentList.getChildCount() > 0 ? View.VISIBLE : View.GONE));
+        }
+        final View bottomToolbar = findViewById(R.id.portal_bottom_toolbar);
+        if (bottomToolbar != null) {
+            bottomToolbar.setVisibility(keyboardVisible ? View.GONE : View.VISIBLE);
+        }
+        if (_contentColumn != null) {
+            final int bottom = keyboardVisible ? 0 : dp(156);
+            _contentColumn.setPadding(
+                    _contentColumn.getPaddingLeft(),
+                    _contentColumn.getPaddingTop(),
+                    _contentColumn.getPaddingRight(),
+                    bottom
+            );
+        }
     }
 
     private void attachSwipeOpener(@Nullable View target) {
@@ -346,21 +423,22 @@ public class PortalInputActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN:
                     _swipeDownX = event.getRawX();
                     _swipeDownY = event.getRawY();
-                    return false;
+                    return true;
                 case MotionEvent.ACTION_MOVE:
                     final float moveDx = event.getRawX() - _swipeDownX;
                     final float moveDy = event.getRawY() - _swipeDownY;
                     if (Math.abs(moveDx) > 6f && Math.abs(moveDx) > Math.abs(moveDy)) {
                         if (moveDx < 0 && classificationWidth > 0 && _classificationDrawer != null) {
-                            final float drag = Math.min(classificationWidth, Math.max(36f, Math.abs(moveDx)));
+                            final float drag = Math.min(classificationWidth, Math.max(dp(10), Math.abs(moveDx)));
                             _classificationDrawer.setTranslationX(classificationWidth - drag);
+                            return true;
                         }
                     }
-                    return false;
+                    return true;
                 case MotionEvent.ACTION_UP:
                     final float dx = event.getRawX() - _swipeDownX;
                     final float dy = event.getRawY() - _swipeDownY;
-                    if (Math.abs(dx) > 140f && Math.abs(dx) > Math.abs(dy) * 1.4f) {
+                    if (Math.abs(dx) > dp(72) && Math.abs(dx) > Math.abs(dy) * 1.25f) {
                         if (dx < 0) {
                             if (_classificationDrawer != null) {
                                 _classificationDrawer.setTranslationX(0f);
@@ -370,10 +448,10 @@ public class PortalInputActivity extends AppCompatActivity {
                         }
                     }
                     resetDrawerTranslations();
-                    return false;
+                    return true;
                 default:
                     resetDrawerTranslations();
-                    return false;
+                    return true;
             }
         });
     }
@@ -384,13 +462,33 @@ public class PortalInputActivity extends AppCompatActivity {
         }
     }
 
+    private void expandClassificationDrawerSwipeZone() {
+        if (_drawerRoot == null) {
+            return;
+        }
+        try {
+            final Field rightDraggerField = DrawerLayout.class.getDeclaredField("mRightDragger");
+            rightDraggerField.setAccessible(true);
+            final Object rightDragger = rightDraggerField.get(_drawerRoot);
+            if (rightDragger == null) {
+                return;
+            }
+            final Field edgeSizeField = rightDragger.getClass().getDeclaredField("mEdgeSize");
+            edgeSizeField.setAccessible(true);
+            final int current = edgeSizeField.getInt(rightDragger);
+            final int target = Math.max(current, getResources().getDisplayMetrics().widthPixels / 3);
+            edgeSizeField.setInt(rightDragger, target);
+        } catch (Exception ignored) {
+        }
+    }
+
     private void updatePublishArc(float progress) {
         if (_publishArc == null) {
             return;
         }
-        _publishArc.setScaleX(1f + (progress * 0.35f));
-        _publishArc.setScaleY(1f + (progress * 0.55f));
-        _publishArc.setAlpha(0.65f + (progress * 0.35f));
+        _publishArc.setTranslationY(-dp(12) * progress);
+        _publishArc.setScaleX(1f + (progress * 0.08f));
+        _publishArc.setScaleY(1f + (progress * 0.12f));
     }
 
     private void resolveSessionFromIntent() {
@@ -415,13 +513,16 @@ public class PortalInputActivity extends AppCompatActivity {
         final String content = _repo.readContent(_sessionFile);
         final List<String> parsedTags = _tagManager.parseAllTags(content);
         _selectedTags.clear();
-        _classificationSlug = "";
+        _classificationSlug = DEFAULT_CLASSIFICATION;
         for (String tag : parsedTags) {
             if (isClassificationTag(tag)) {
                 _classificationSlug = toClassificationSlug(tag);
             } else {
                 _selectedTags.add(tag);
             }
+        }
+        if (TextUtils.isEmpty(_classificationSlug)) {
+            _classificationSlug = DEFAULT_CLASSIFICATION;
         }
         final String cleaned = stripManagedMetadata(content);
         _titleInput.setText(extractTitle(cleaned));
@@ -480,9 +581,7 @@ public class PortalInputActivity extends AppCompatActivity {
     }
 
     private String stripAttachmentMarkup(@NonNull String content) {
-        String cleaned = content.replaceAll("(?m)^!\\[[^\\]]*]\\([^\\)]*\\)\\s*$\\n?", "");
-        cleaned = cleaned.replaceAll("(?ms)^<audio\\s+src='[^']+'\\s+controls>.*?</audio>\\s*$\\n?", "");
-        return cleaned.replaceAll("\\n{3,}", "\n\n");
+        return PortalAttachmentPreviewHelper.stripLegacyAttachmentMarkup(content);
     }
 
     private String buildAttachmentMarkdown() {
@@ -519,16 +618,14 @@ public class PortalInputActivity extends AppCompatActivity {
     }
 
     private void refreshStatus() {
-        final int attachmentCount = countAttachments();
-        final String classification = TextUtils.isEmpty(_classificationSlug)
-                ? getString(R.string.portal_unclassified)
-                : humanizeSlug(_classificationSlug);
         if (_recorder.isRecording()) {
             final long elapsed = Math.max(0, System.currentTimeMillis() - _recordStartedAt);
             final long sec = elapsed / 1000;
+            _status.setVisibility(View.VISIBLE);
             _status.setText(getString(R.string.portal_recording_status, sec / 60, sec % 60));
         } else {
-            _status.setText(getString(R.string.portal_status_summary, attachmentCount, classification));
+            _status.setText("");
+            _status.setVisibility(View.GONE);
         }
         updateRecordButtonState();
     }
@@ -560,25 +657,56 @@ public class PortalInputActivity extends AppCompatActivity {
         }
         visibleTags.addAll(topTags);
         visibleTags.addAll(DEFAULT_TAGS);
-        int i = 0;
-        for (String tag : visibleTags) {
-            final Chip chip = new Chip(this);
-            chip.setText("#" + tag);
-            chip.setCheckable(true);
-            chip.setChecked(_selectedTags.contains(tag));
-            final boolean selected = _selectedTags.contains(tag);
-            chip.setChipBackgroundColor(ColorStateList.valueOf(selected ? 0xFFF04B4B : 0xFFE7E2DB));
-            chip.setTextColor(selected ? 0xFFFFFFFF : 0xFF1E2135);
-            chip.setOnClickListener(v -> toggleTagSelection(tag));
-            _quickTagsGroup.addView(chip);
-            i++;
-        }
         final Chip addChip = new Chip(this);
         addChip.setText("+");
-        addChip.setChipBackgroundColor(ColorStateList.valueOf(0xFF1E2135));
-        addChip.setTextColor(0xFFFFFFFF);
+        addChip.setEnsureMinTouchTargetSize(false);
+        addChip.setChipMinHeight(dp(34));
+        addChip.setMinHeight(dp(34));
+        addChip.setMinimumHeight(dp(34));
+        addChip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
+        addChip.setChipStartPadding(dp(8));
+        addChip.setChipEndPadding(dp(8));
+        addChip.setChipStrokeWidth(dp(1));
+        addChip.setChipBackgroundColor(ColorStateList.valueOf(0x00000000));
+        addChip.setChipStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.portal_chip_unselected_stroke)));
+        addChip.setTextColor(ContextCompat.getColor(this, R.color.portal_chip_unselected_text));
         addChip.setOnClickListener(v -> showAddTagDialog());
         _quickTagsGroup.addView(addChip);
+        for (String tag : visibleTags) {
+            final Chip chip = new Chip(this);
+            chip.setText(tag);
+            chip.setCheckable(false);
+            chip.setChecked(false);
+            chip.setCheckedIconVisible(false);
+            chip.setChipIconVisible(false);
+            chip.setEnsureMinTouchTargetSize(false);
+            chip.setChipMinHeight(dp(34));
+            chip.setMinHeight(dp(34));
+            chip.setMinimumHeight(dp(34));
+            chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+            chip.setChipStartPadding(dp(12));
+            chip.setChipEndPadding(dp(12));
+            chip.setTextStartPadding(dp(8));
+            chip.setTextEndPadding(dp(8));
+            chip.setChipStrokeWidth(dp(1));
+            final boolean selected = _selectedTags.contains(tag);
+            chip.setChipBackgroundColor(ColorStateList.valueOf(selected
+                    ? ContextCompat.getColor(this, R.color.accent)
+                    : ContextCompat.getColor(this, R.color.portal_chip_unselected_bg)));
+            chip.setChipStrokeColor(ColorStateList.valueOf(selected
+                    ? 0x00F04B4B
+                    : ContextCompat.getColor(this, R.color.portal_chip_unselected_stroke)));
+            chip.setTextColor(selected
+                    ? ContextCompat.getColor(this, R.color.white)
+                    : ContextCompat.getColor(this, R.color.portal_chip_unselected_text));
+            chip.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            chip.setOnClickListener(v -> toggleTagSelection(tag));
+            chip.setOnLongClickListener(v -> {
+                showDeleteTagDialog(tag);
+                return true;
+            });
+            _quickTagsGroup.addView(chip);
+        }
     }
 
     private void toggleTagSelection(@NonNull String tag) {
@@ -612,6 +740,20 @@ public class PortalInputActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showDeleteTagDialog(@NonNull String tag) {
+        showPortalConfirmDialog(
+                getString(R.string.delete),
+                "Delete tag \"" + tag + "\"?",
+                "Delete",
+                () -> {
+                    _selectedTags.remove(tag);
+                    _tagStore.removeTag(tag);
+                    renderQuickTags();
+                    schedulePreviewRefresh();
+                }
+        );
+    }
+
     private String extractTitle(@NonNull String body) {
         final String trimmed = body.replaceFirst("^\\s+", "");
         if (!trimmed.startsWith("# ")) {
@@ -641,15 +783,22 @@ public class PortalInputActivity extends AppCompatActivity {
     }
 
     private void toggleHeadingAtSelection() {
+        toggleHeadingAtSelection(1);
+    }
+
+    private void toggleHeadingAtSelection(int level) {
         final Editable e = _editor.getText();
+        final String marker = level <= 1 ? "# " : "## ";
         int start = Math.max(0, _editor.getSelectionStart());
         while (start > 0 && e.charAt(start - 1) != '\n') {
             start--;
         }
-        if (e.toString().startsWith("# ", start)) {
-            e.delete(start, start + 2);
+        if (e.toString().startsWith(marker, start)) {
+            e.delete(start, start + marker.length());
+        } else if (level > 1 && e.toString().startsWith("# ", start)) {
+            e.replace(start, start + 2, marker);
         } else {
-            e.insert(start, "# ");
+            e.insert(start, marker);
         }
     }
 
@@ -662,8 +811,33 @@ public class PortalInputActivity extends AppCompatActivity {
             start = end;
             end = tmp;
         }
+        if (start == end) {
+            e.insert(start, prefix + suffix);
+            _editor.setSelection(start + prefix.length());
+            return;
+        }
         e.insert(end, suffix);
         e.insert(start, prefix);
+        _editor.setSelection(end + prefix.length() + suffix.length());
+    }
+
+    private void wrapBlock(@NonNull String prefix, @NonNull String suffix) {
+        final Editable e = _editor.getText();
+        int start = Math.max(0, _editor.getSelectionStart());
+        int end = Math.max(0, _editor.getSelectionEnd());
+        if (start > end) {
+            final int tmp = start;
+            start = end;
+            end = tmp;
+        }
+        if (start == end) {
+            e.insert(start, prefix + suffix);
+            _editor.setSelection(start + prefix.length());
+            return;
+        }
+        e.insert(end, suffix);
+        e.insert(start, prefix);
+        _editor.setSelection(end + prefix.length() + suffix.length());
     }
 
     private void prefixLines(@NonNull String prefix) {
@@ -678,6 +852,7 @@ public class PortalInputActivity extends AppCompatActivity {
         final String selected = e.subSequence(start, end).toString();
         if (selected.isEmpty()) {
             e.insert(start, prefix);
+            _editor.setSelection(start + prefix.length());
             return;
         }
         final String[] lines = selected.split("\\n", -1);
@@ -689,6 +864,7 @@ public class PortalInputActivity extends AppCompatActivity {
             }
         }
         e.replace(start, end, out.toString());
+        _editor.setSelection(start + out.length());
     }
 
     private void prefixNumberedLines() {
@@ -716,6 +892,125 @@ public class PortalInputActivity extends AppCompatActivity {
         e.replace(start, end, out.toString());
     }
 
+    private void maybeApplyEditorAutoFormatting(@NonNull Editable e) {
+        if (_suppressEditorAutoFormat) {
+            return;
+        }
+        if (_editorChangeCount > _editorChangeBefore) {
+            final int end = Math.min(e.length(), _editorChangeStart + _editorChangeCount);
+            final String inserted = e.subSequence(Math.max(0, _editorChangeStart), end).toString();
+            if (inserted.contains("\n")) {
+                continueListOnNewline(e);
+            }
+            return;
+        }
+        if (_editorChangeBefore > _editorChangeCount) {
+            maybeRemoveEmptyListMarkerOnBackspace(e);
+        }
+    }
+
+    private void continueListOnNewline(@NonNull Editable e) {
+        final int cursor = Math.max(0, _editor.getSelectionStart());
+        final int currentLineStart = findLineStart(e, cursor);
+        final int previousLineEnd = Math.max(0, currentLineStart - 1);
+        final int previousLineStart = findLineStart(e, previousLineEnd);
+        final String previousLine = e.subSequence(previousLineStart, previousLineEnd).toString();
+
+        String prefix = null;
+        java.util.regex.Matcher bullet = java.util.regex.Pattern.compile("^(\\s*[-*+]\\s).+").matcher(previousLine);
+        if (bullet.matches()) {
+            prefix = bullet.group(1);
+        } else {
+            java.util.regex.Matcher numbered = java.util.regex.Pattern.compile("^(\\s*)(\\d+)\\.\\s+.+").matcher(previousLine);
+            if (numbered.matches()) {
+                final int next = Integer.parseInt(numbered.group(2)) + 1;
+                prefix = numbered.group(1) + next + ". ";
+            }
+        }
+        if (TextUtils.isEmpty(prefix)) {
+            return;
+        }
+        _suppressEditorAutoFormat = true;
+        try {
+            e.insert(cursor, prefix);
+            _editor.setSelection(cursor + prefix.length());
+        } finally {
+            _suppressEditorAutoFormat = false;
+        }
+    }
+
+    private void maybeRemoveEmptyListMarkerOnBackspace(@NonNull Editable e) {
+        final int cursor = Math.max(0, _editor.getSelectionStart());
+        final int lineStart = findLineStart(e, cursor);
+        int lineEnd = cursor;
+        while (lineEnd < e.length() && e.charAt(lineEnd) != '\n') {
+            lineEnd++;
+        }
+        final String line = e.subSequence(lineStart, lineEnd).toString();
+        if (!line.matches("^\\s*([-*+]|\\d+\\.)$")) {
+            return;
+        }
+        _suppressEditorAutoFormat = true;
+        try {
+            e.delete(lineStart, lineEnd);
+            _editor.setSelection(lineStart);
+        } finally {
+            _suppressEditorAutoFormat = false;
+        }
+    }
+
+    private int findLineStart(@NonNull Editable e, int index) {
+        int start = Math.max(0, Math.min(index, e.length()));
+        while (start > 0 && e.charAt(start - 1) != '\n') {
+            start--;
+        }
+        return start;
+    }
+
+    private void formatLinkAtSelection() {
+        final Editable e = _editor.getText();
+        int start = Math.max(0, _editor.getSelectionStart());
+        int end = Math.max(0, _editor.getSelectionEnd());
+        if (start == end) {
+            while (start > 0 && e.charAt(start - 1) != '\n') {
+                start--;
+            }
+            while (end < e.length() && e.charAt(end) != '\n') {
+                end++;
+            }
+        } else if (start > end) {
+            final int tmp = start;
+            start = end;
+            end = tmp;
+        }
+        final String selected = e.subSequence(start, end).toString().trim();
+        if (selected.isEmpty()) {
+            return;
+        }
+        final String[] pieces = selected.split("\\s+");
+        String url = null;
+        String title = "";
+        for (int i = pieces.length - 1; i >= 0; i--) {
+            if (Patterns.WEB_URL.matcher(pieces[i]).matches()) {
+                url = pieces[i];
+                title = selected.substring(0, selected.lastIndexOf(url)).trim();
+                break;
+            }
+        }
+        if (TextUtils.isEmpty(url) && Patterns.WEB_URL.matcher(selected).matches()) {
+            url = selected;
+        }
+        if (TextUtils.isEmpty(url)) {
+            return;
+        }
+        if (TextUtils.isEmpty(title)) {
+            title = url;
+        }
+        final String formatted = AttachLinkOrFileDialog.formatLink(title, url, FormatRegistry.FORMAT_MARKDOWN);
+        e.replace(start, end, formatted);
+        _editor.setSelection(start + formatted.length());
+    }
+
     private void refreshAttachmentDrawer() {
         _attachmentList.removeAllViews();
         if (_sessionFile == null) {
@@ -729,7 +1024,7 @@ public class PortalInputActivity extends AppCompatActivity {
             refreshStatus();
             return;
         }
-        _attachmentStrip.setVisibility(View.VISIBLE);
+        _attachmentStrip.setVisibility(_renderMarkdown ? View.GONE : View.VISIBLE);
         final List<File> sorted = new ArrayList<>(Arrays.asList(files));
         Collections.sort(sorted, Comparator.comparing(File::getName));
         for (File file : sorted) {
@@ -740,24 +1035,30 @@ public class PortalInputActivity extends AppCompatActivity {
 
     private View buildAttachmentRow(@NonNull File file) {
         if (isImageFile(file)) {
-            final LinearLayout frame = new LinearLayout(this);
-            frame.setOrientation(LinearLayout.HORIZONTAL);
-            final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(220, ViewGroup.LayoutParams.WRAP_CONTENT);
+            final FrameLayout frame = new FrameLayout(this);
+            final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(236), dp(176));
             lp.rightMargin = 12;
             frame.setLayoutParams(lp);
+            frame.setForegroundGravity(Gravity.TOP | Gravity.END);
 
             final ImageView preview = new ImageView(this);
-            final LinearLayout.LayoutParams previewParams = new LinearLayout.LayoutParams(0, 180, 1f);
+            final FrameLayout.LayoutParams previewParams = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+            );
             preview.setLayoutParams(previewParams);
             preview.setScaleType(ImageView.ScaleType.CENTER_CROP);
             preview.setImageBitmap(loadImagePreview(file));
             preview.setOnClickListener(v -> showImagePreview(file));
+            preview.setBackground(createRoundedBackground(0xFF111827, 24));
 
             final ImageButton delete = new ImageButton(this);
-            final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(72, 180);
+            final FrameLayout.LayoutParams deleteParams = new FrameLayout.LayoutParams(dp(40), dp(40), Gravity.TOP | Gravity.END);
+            deleteParams.topMargin = dp(10);
+            deleteParams.rightMargin = dp(10);
             delete.setLayoutParams(deleteParams);
             delete.setImageResource(R.drawable.ic_delete_black_24dp);
-            delete.setBackgroundColor(ContextCompat.getColor(this, R.color.accent));
+            delete.setBackground(createRoundedBackground(ContextCompat.getColor(this, R.color.accent), 20));
             delete.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white)));
             delete.setScaleType(ImageView.ScaleType.CENTER);
             delete.setOnClickListener(v -> deleteAttachment(file));
@@ -768,49 +1069,69 @@ public class PortalInputActivity extends AppCompatActivity {
         }
 
         final LinearLayout row = new LinearLayout(this);
-        final LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(220, ViewGroup.LayoutParams.WRAP_CONTENT);
+        final LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(dp(268), ViewGroup.LayoutParams.WRAP_CONTENT);
         rowParams.rightMargin = 12;
         row.setLayoutParams(rowParams);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setOrientation(LinearLayout.VERTICAL);
+        row.setPadding(dp(16), dp(16), dp(16), dp(14));
+        row.setBackground(createAudioAttachmentBackground());
+        row.setOnClickListener(v -> showAudioPreview(file));
 
-        final TextView label = new TextView(this);
-        final LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(0, 100, 1f);
-        label.setLayoutParams(labelParams);
-        label.setText(file.getName());
-        label.setBackgroundColor(ContextCompat.getColor(this, R.color.primary));
-        label.setGravity(Gravity.CENTER_VERTICAL);
-        label.setPadding(24, 0, 24, 0);
-        label.setTextColor(ContextCompat.getColor(this, R.color.white));
-        label.setTextSize(15f);
-        label.setOnClickListener(v -> showAudioPreview(file));
+        final LinearLayout topRow = new LinearLayout(this);
+        topRow.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        topRow.setGravity(Gravity.CENTER_VERTICAL);
+        topRow.setOrientation(LinearLayout.HORIZONTAL);
+
+        final ImageButton play = new ImageButton(this);
+        final LinearLayout.LayoutParams playParams = new LinearLayout.LayoutParams(dp(42), dp(42));
+        playParams.rightMargin = dp(12);
+        play.setLayoutParams(playParams);
+        play.setImageResource(android.R.drawable.ic_media_play);
+        play.setBackground(createRoundedBackground(0x33FFFFFF, 21));
+        play.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white)));
+        play.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        play.setOnClickListener(v -> showAudioPreview(file));
+
+        final PortalAudioVisualizerView visualizer = new PortalAudioVisualizerView(this);
+        final LinearLayout.LayoutParams visualizerParams = new LinearLayout.LayoutParams(0, dp(56), 1f);
+        visualizer.setLayoutParams(visualizerParams);
+        visualizer.setOnClickListener(v -> showAudioPreview(file));
 
         final ImageButton delete = new ImageButton(this);
-        final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(72, 100);
+        final LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(dp(36), dp(36));
+        deleteParams.leftMargin = dp(10);
         delete.setLayoutParams(deleteParams);
         delete.setImageResource(R.drawable.ic_delete_black_24dp);
-        delete.setBackgroundColor(ContextCompat.getColor(this, R.color.accent));
+        delete.setBackground(createRoundedBackground(0x24FFFFFF, 18));
         delete.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white)));
         delete.setOnClickListener(v -> deleteAttachment(file));
 
+        final TextView label = new TextView(this);
+        final LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        labelParams.topMargin = dp(12);
+        label.setLayoutParams(labelParams);
+        label.setText(file.getName());
+        label.setTextColor(ContextCompat.getColor(this, R.color.white));
+        label.setTextSize(13f);
+        label.setMaxLines(2);
+        label.setEllipsize(TextUtils.TruncateAt.END);
+        label.setOnClickListener(v -> showAudioPreview(file));
+
+        topRow.addView(play);
+        topRow.addView(visualizer);
+        topRow.addView(delete);
+        row.addView(topRow);
         row.addView(label);
-        row.addView(delete);
         return row;
     }
 
     private void deleteAttachment(@NonNull File file) {
-        if (_sessionFile == null) {
+        if (_sessionFile == null || !file.exists()) {
             return;
         }
-        final String rel = _storage.relativeToSession(_sessionFile, file);
-        final String title = GsFileUtils.getFilenameWithoutExtension(file);
-        final Editable e = _editor.getText();
-        final String audioBlock = "\n<audio src='" + rel + "' controls><a href='" + rel + "'>" + title + "</a></audio>\n";
-        final String imageBlock = "\n![" + title + "](" + rel + ")\n";
-        String content = e.toString().replace(audioBlock, "\n").replace(imageBlock, "\n");
-        content = content.replace(rel, "");
-        _editor.setText(content.replaceAll("\\n{3,}", "\n\n"));
-        _editor.setSelection(_editor.getText().length());
         //noinspection ResultOfMethodCallIgnored
         file.delete();
         saveSession(false);
@@ -821,6 +1142,7 @@ public class PortalInputActivity extends AppCompatActivity {
     private void refreshClassificationDrawer() {
         _classificationList.removeAllViews();
         final Set<String> all = new LinkedHashSet<>(DEFAULT_CLASSIFICATIONS);
+        all.removeAll(_storage.getHiddenDefaultClassifications());
         all.addAll(_storage.getCustomClassifications());
         if (!TextUtils.isEmpty(_classificationSlug)) {
             all.add(_classificationSlug);
@@ -828,18 +1150,28 @@ public class PortalInputActivity extends AppCompatActivity {
         for (String slug : all) {
             _classificationList.addView(buildClassificationButton(slug));
         }
+        if (_openClassificationButton != null) {
+            _openClassificationButton.setText(TextUtils.isEmpty(_classificationSlug)
+                    ? getString(R.string.portal_open_classification)
+                    : humanizeSlug(_classificationSlug));
+        }
     }
 
     private View buildClassificationButton(@NonNull String slug) {
         final MaterialButton button = new MaterialButton(this);
         final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.bottomMargin = 10;
+        lp.bottomMargin = dp(12);
+        lp.leftMargin = 0;
+        lp.rightMargin = 0;
         button.setLayoutParams(lp);
         button.setInsetTop(0);
         button.setInsetBottom(0);
+        button.setMinHeight(dp(54));
+        button.setPadding(dp(22), 0, dp(22), 0);
         button.setText(humanizeSlug(slug));
-        button.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
-        button.setCornerRadius(18);
+        button.setGravity(Gravity.CENTER);
+        button.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        button.setCornerRadius(dp(27));
         final boolean selected = slug.equals(_classificationSlug);
         if (selected) {
             button.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
@@ -847,7 +1179,7 @@ public class PortalInputActivity extends AppCompatActivity {
         } else {
             button.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.background)));
             button.setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
-            button.setStrokeWidth(2);
+            button.setStrokeWidth(dp(1));
             button.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
         }
         button.setOnClickListener(v -> {
@@ -856,6 +1188,10 @@ public class PortalInputActivity extends AppCompatActivity {
             refreshStatus();
             schedulePreviewRefresh();
             _drawerRoot.closeDrawer(GravityCompat.END);
+        });
+        button.setOnLongClickListener(v -> {
+            showDeleteClassificationDialog(slug);
+            return true;
         });
         return button;
     }
@@ -869,7 +1205,11 @@ public class PortalInputActivity extends AppCompatActivity {
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
                     final String slug = normalizeSlug(input.getText() == null ? "" : input.getText().toString());
                     if (!slug.isEmpty()) {
-                        _storage.recordCustomClassification(slug);
+                        if (DEFAULT_CLASSIFICATIONS.contains(slug)) {
+                            _storage.restoreDefaultClassification(slug);
+                        } else {
+                            _storage.recordCustomClassification(slug);
+                        }
                         _classificationSlug = slug;
                         refreshClassificationDrawer();
                         refreshStatus();
@@ -880,23 +1220,232 @@ public class PortalInputActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showDeleteClassificationDialog(@NonNull String slug) {
+        showPortalConfirmDialog(
+                getString(R.string.delete),
+                "Delete note type \"" + humanizeSlug(slug) + "\"?",
+                "Delete",
+                () -> {
+                    if (DEFAULT_CLASSIFICATIONS.contains(slug)) {
+                        _storage.hideDefaultClassification(slug);
+                    } else {
+                        _storage.removeCustomClassification(slug);
+                    }
+                    if (slug.equals(_classificationSlug)) {
+                        _classificationSlug = getFallbackClassification(slug);
+                    }
+                    refreshClassificationDrawer();
+                    refreshStatus();
+                    schedulePreviewRefresh();
+                }
+        );
+    }
+
     private void showSettingsMenu(@NonNull View anchor) {
-        final PopupMenu menu = new PopupMenu(this, anchor, Gravity.END);
-        menu.getMenu().add(Menu.NONE, MENU_SAVE_FOLDER, Menu.NONE, R.string.portal_save_folder);
-        menu.getMenu().add(Menu.NONE, MENU_DRAFT_FOLDER, Menu.NONE, R.string.portal_draft_folder);
-        menu.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case MENU_SAVE_FOLDER:
-                    openDirectoryPicker(REQ_PICK_SAVE_DIR);
-                    return true;
-                case MENU_DRAFT_FOLDER:
-                    openDirectoryPicker(REQ_PICK_DRAFT_DIR);
-                    return true;
-                default:
-                    return false;
-            }
+        final Dialog dialog = new Dialog(this);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        final FrameLayout overlay = new FrameLayout(this);
+        overlay.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        overlay.setBackgroundColor(0x660B1020);
+        overlay.setOnClickListener(v -> dialog.dismiss());
+
+        final LinearLayout card = new LinearLayout(this);
+        final FrameLayout.LayoutParams cardParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER
+        );
+        final int margin = dp(12);
+        cardParams.leftMargin = margin;
+        cardParams.rightMargin = margin;
+        card.setLayoutParams(cardParams);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(22), dp(20), dp(22), dp(18));
+        card.setBackground(createRoundedBackground(ContextCompat.getColor(this, R.color.portal_drawer_surface), 28));
+        card.setClickable(true);
+
+        final TextView title = new TextView(this);
+        title.setText(R.string.portal_settings);
+        title.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
+        title.setTypeface(title.getTypeface(), android.graphics.Typeface.BOLD);
+
+        final View underline = new View(this);
+        final LinearLayout.LayoutParams underlineParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(1)
+        );
+        underlineParams.topMargin = dp(10);
+        underline.setLayoutParams(underlineParams);
+        underline.setBackgroundColor(0xCCFFFFFF);
+
+        final LinearLayout pills = new LinearLayout(this);
+        final LinearLayout.LayoutParams pillsParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        pillsParams.topMargin = dp(16);
+        pills.setLayoutParams(pillsParams);
+        pills.setOrientation(LinearLayout.VERTICAL);
+
+        pills.addView(createSettingsSheetButton(R.string.portal_save_folder, () -> {
+            dialog.dismiss();
+            openDirectoryPicker(REQ_PICK_SAVE_DIR);
+        }));
+        pills.addView(createSettingsSheetButton(R.string.portal_draft_folder, () -> {
+            dialog.dismiss();
+            openDirectoryPicker(REQ_PICK_DRAFT_DIR);
+        }));
+
+        card.addView(title);
+        card.addView(underline);
+        card.addView(pills);
+        overlay.addView(card);
+        dialog.setContentView(overlay);
+        dialog.show();
+    }
+
+    private void showPortalConfirmDialog(@NonNull String titleText,
+                                         @NonNull String messageText,
+                                         @NonNull String confirmText,
+                                         @NonNull Runnable onConfirm) {
+        final Dialog dialog = new Dialog(this);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        final FrameLayout overlay = new FrameLayout(this);
+        overlay.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        overlay.setBackgroundColor(0x660B1020);
+        overlay.setOnClickListener(v -> dialog.dismiss());
+
+        final LinearLayout card = new LinearLayout(this);
+        final FrameLayout.LayoutParams cardParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER
+        );
+        final int margin = dp(24);
+        cardParams.leftMargin = margin;
+        cardParams.rightMargin = margin;
+        card.setLayoutParams(cardParams);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(22), dp(20), dp(22), dp(18));
+        card.setBackground(createRoundedBackground(ContextCompat.getColor(this, R.color.portal_drawer_surface), 28));
+        card.setClickable(true);
+
+        final TextView title = new TextView(this);
+        title.setText(titleText);
+        title.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
+        title.setTypeface(title.getTypeface(), android.graphics.Typeface.BOLD);
+
+        final TextView message = new TextView(this);
+        final LinearLayout.LayoutParams messageParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        messageParams.topMargin = dp(10);
+        message.setLayoutParams(messageParams);
+        message.setText(messageText);
+        message.setTextColor(ContextCompat.getColor(this, R.color.secondary_text));
+        message.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+
+        final LinearLayout actions = new LinearLayout(this);
+        final LinearLayout.LayoutParams actionsParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        actionsParams.topMargin = dp(18);
+        actions.setLayoutParams(actionsParams);
+        actions.setGravity(Gravity.END);
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+
+        final MaterialButton cancel = new MaterialButton(this);
+        cancel.setText(android.R.string.cancel);
+        cancel.setTextColor(ContextCompat.getColor(this, R.color.secondary_text));
+        cancel.setBackgroundTintList(ColorStateList.valueOf(Color.TRANSPARENT));
+        cancel.setRippleColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.portal_chip_unselected_stroke)));
+        cancel.setOnClickListener(v -> dialog.dismiss());
+
+        final MaterialButton confirm = new MaterialButton(this);
+        final LinearLayout.LayoutParams confirmParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        confirmParams.leftMargin = dp(8);
+        confirm.setLayoutParams(confirmParams);
+        confirm.setText(confirmText);
+        confirm.setTextColor(ContextCompat.getColor(this, R.color.white));
+        confirm.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+        confirm.setCornerRadius(dp(20));
+        confirm.setOnClickListener(v -> {
+            dialog.dismiss();
+            onConfirm.run();
         });
-        menu.show();
+
+        actions.addView(cancel);
+        actions.addView(confirm);
+        card.addView(title);
+        card.addView(message);
+        card.addView(actions);
+        overlay.addView(card);
+        dialog.setContentView(overlay);
+        dialog.show();
+    }
+
+    @NonNull
+    private View createSettingsSheetButton(int textRes, @NonNull Runnable onClick) {
+        final TextView button = new TextView(this);
+        final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(54)
+        );
+        lp.bottomMargin = dp(12);
+        button.setLayoutParams(lp);
+        button.setPadding(dp(18), 0, dp(18), 0);
+        button.setGravity(Gravity.CENTER);
+        button.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        button.setText(textRes);
+        button.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
+        button.setBackground(createRoundedStrokeBackground(
+                adjustColor(ContextCompat.getColor(this, R.color.portal_drawer_surface), isDarkModeEnabled() ? 0.92f : 0.97f),
+                0x33FFFFFF,
+                22,
+                1
+        ));
+        button.setClickable(true);
+        button.setFocusable(true);
+        button.setForeground(ContextCompat.getDrawable(this, android.R.drawable.list_selector_background));
+        button.setOnClickListener(v -> onClick.run());
+        return button;
+    }
+
+    @NonNull
+    private GradientDrawable createRoundedStrokeBackground(int fillColor, int strokeColor, int radiusDp, int strokeDp) {
+        final GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(fillColor);
+        drawable.setCornerRadius(dp(radiusDp));
+        drawable.setStroke(dp(strokeDp), strokeColor);
+        return drawable;
+    }
+
+    private int adjustColor(int color, float factor) {
+        final int alpha = Color.alpha(color);
+        final int red = Math.max(0, Math.min(255, Math.round(Color.red(color) * factor)));
+        final int green = Math.max(0, Math.min(255, Math.round(Color.green(color) * factor)));
+        final int blue = Math.max(0, Math.min(255, Math.round(Color.blue(color) * factor)));
+        return Color.argb(alpha, red, green, blue);
     }
 
     private void openDirectoryPicker(int requestCode) {
@@ -918,7 +1467,7 @@ public class PortalInputActivity extends AppCompatActivity {
             _titleInput.setText("");
             _editor.setText("");
             _selectedTags.clear();
-            _classificationSlug = "";
+            _classificationSlug = DEFAULT_CLASSIFICATION;
             refreshDateTime();
             refreshStatus();
             renderQuickTags();
@@ -932,8 +1481,9 @@ public class PortalInputActivity extends AppCompatActivity {
     private void applyRenderMode() {
         _editor.setVisibility(_renderMarkdown ? View.GONE : View.VISIBLE);
         _previewWeb.setVisibility(_renderMarkdown ? View.VISIBLE : View.GONE);
-        _titleInput.setVisibility(_renderMarkdown ? View.GONE : View.VISIBLE);
-        _formatScroll.setVisibility(_renderMarkdown ? View.GONE : View.VISIBLE);
+        _titleInput.setVisibility(View.VISIBLE);
+        _formatScroll.setVisibility(View.VISIBLE);
+        _attachmentStrip.setVisibility(_renderMarkdown ? View.GONE : (_attachmentList.getChildCount() > 0 ? View.VISIBLE : View.GONE));
         refreshPreviewActionState();
         refreshMarkdownPreview();
     }
@@ -958,16 +1508,75 @@ public class PortalInputActivity extends AppCompatActivity {
             return;
         }
         try {
-            final String htmlBody = MarkdownTextConverter.flexmarkRenderer.render(
-                    MarkdownTextConverter.flexmarkParser.parse(buildContentForSave())
+            final String rawBodySource = PortalAttachmentPreviewHelper.stripLegacyAttachmentMarkup(
+                    _editor.getText() == null ? "" : _editor.getText().toString()
             );
+            final String bodySource = normalizeQuoteBlocksForPreview(rawBodySource);
+            String htmlBody = MarkdownTextConverter.flexmarkRenderer.render(
+                    MarkdownTextConverter.flexmarkParser.parse(bodySource)
+            );
+            htmlBody = htmlBody.replaceAll("(?s)<p>&gt;\\s*(.*?)</p>", "<blockquote><p>$1</p></blockquote>");
+            final String attachmentCards = PortalAttachmentPreviewHelper.buildAttachmentCardsHtml(_sessionFile);
+            final String backgroundColor = toCssColor(ContextCompat.getColor(this, R.color.background));
+            final String textColor = toCssColor(ContextCompat.getColor(this, R.color.primary_text));
+            final String accentColor = toCssColor(ContextCompat.getColor(this, R.color.accent));
+            final String blockquoteBackground = isDarkModeEnabled() ? "rgba(227,92,99,.14)" : "#fff1ef";
+            final String blockquoteText = isDarkModeEnabled() ? "rgba(255,255,255,.88)" : "#374151";
+            final String blockquoteShadow = isDarkModeEnabled()
+                    ? "0 8px 20px rgba(0,0,0,.26)"
+                    : "0 8px 20px rgba(17,24,39,.08)";
             final String html = "<html><head><meta name='viewport' content='width=device-width, initial-scale=1' />"
-                    + "<style>body{font-family:sans-serif;padding:18px;color:#111827;background:#EEEEEE;}img{max-width:100%;height:auto;}audio{width:100%;margin-top:16px;}pre{white-space:pre-wrap;}</style>"
-                    + "</head><body>" + htmlBody + "</body></html>";
+                    + "<style>html,body{margin:0;background:" + backgroundColor + ";}"
+                    + "body{font-family:sans-serif;padding:18px;color:" + textColor + ";background:" + backgroundColor + ";}"
+                    + ".portal-preview-shell{padding-bottom:28px;}"
+                    + ".portal-preview-body{padding:2px 6px 0;}"
+                    + ".portal-preview-body,.portal-preview-body p,.portal-preview-body li,.portal-preview-body code,.portal-preview-body pre{color:" + textColor + ";}"
+                    + ".portal-preview-body h1,.portal-preview-body h2,.portal-preview-body h3,.portal-preview-body h4,.portal-preview-body h5,.portal-preview-body h6{color:" + textColor + ";text-decoration:none;}"
+                    + ".portal-preview-body h1 a,.portal-preview-body h2 a,.portal-preview-body h3 a,.portal-preview-body h4 a,.portal-preview-body h5 a,.portal-preview-body h6 a{color:inherit!important;text-decoration:none!important;pointer-events:none;}"
+                    + ".portal-preview-body a{color:" + accentColor + ";}"
+                    + ".portal-preview-body blockquote{margin:18px 0!important;padding:16px 18px 16px 20px!important;border:1px solid rgba(227,92,99,.28);border-left:6px solid " + accentColor + ";border-radius:18px;background:" + blockquoteBackground + ";color:" + blockquoteText + ";box-shadow:" + blockquoteShadow + ";}"
+                    + ".portal-preview-body blockquote p{margin:0!important;}"
+                    + ".portal-preview-body img{max-width:100%;height:auto;border-radius:18px;}"
+                    + ".portal-preview-body audio{width:100%;margin-top:16px;}"
+                    + ".portal-preview-body pre{white-space:pre-wrap;}"
+                    + PortalAttachmentPreviewHelper.buildAttachmentCardsCss()
+                    + "</style></head><body><div class='portal-preview-shell'>"
+                    + "<section class='portal-preview-body'>" + htmlBody + "</section>"
+                    + attachmentCards
+                    + "</div></body></html>";
             final String baseUrl = _sessionFile.getParentFile() == null ? null : _sessionFile.getParentFile().toURI().toString();
             _previewWeb.loadDataWithBaseURL(baseUrl, html, "text/html", "utf-8", null);
         } catch (Exception ignored) {
         }
+    }
+
+    @NonNull
+    private String normalizeQuoteBlocksForPreview(@NonNull String text) {
+        final String[] lines = text.split("\\r?\\n", -1);
+        final StringBuilder out = new StringBuilder();
+        final StringBuilder quote = new StringBuilder();
+        for (String line : lines) {
+            if (line.startsWith("> ")) {
+                if (quote.length() > 0) {
+                    quote.append("\n");
+                }
+                quote.append(line.substring(2));
+                continue;
+            }
+            if (quote.length() > 0) {
+                out.append("<blockquote>")
+                        .append(quote.toString().replace("\n", "<br/>"))
+                        .append("</blockquote>\n");
+                quote.setLength(0);
+            }
+            out.append(line).append("\n");
+        }
+        if (quote.length() > 0) {
+            out.append("<blockquote>")
+                    .append(quote.toString().replace("\n", "<br/>"))
+                    .append("</blockquote>\n");
+        }
+        return out.toString();
     }
 
     private void openMediaPicker() {
@@ -983,6 +1592,111 @@ public class PortalInputActivity extends AppCompatActivity {
             i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         }
         startActivityForResult(Intent.createChooser(i, getString(R.string.portal_gallery)), REQ_MEDIA_PICK);
+    }
+
+    private void openAudioFilePicker() {
+        final BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.Theme_AppCompat_DayNight_Dialog_Rounded);
+        final LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(dp(20), dp(16), dp(20), dp(20));
+
+        final TextView title = new TextView(this);
+        title.setText("Select Audio");
+        title.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
+        title.setTypeface(title.getTypeface(), android.graphics.Typeface.BOLD);
+
+        final TextView subtitle = new TextView(this);
+        final LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        subtitleParams.topMargin = dp(6);
+        subtitle.setLayoutParams(subtitleParams);
+        subtitle.setTextColor(ContextCompat.getColor(this, R.color.secondary_text));
+        subtitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+
+        final ListView listView = new ListView(this);
+        final LinearLayout.LayoutParams listParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(420)
+        );
+        listParams.topMargin = dp(14);
+        listView.setLayoutParams(listParams);
+        listView.setDivider(new ColorDrawable(ContextCompat.getColor(this, R.color.portal_divider)));
+        listView.setDividerHeight(1);
+        listView.setBackgroundColor(Color.TRANSPARENT);
+        listView.setCacheColorHint(Color.TRANSPARENT);
+
+        final File storageRoot = Environment.getExternalStorageDirectory();
+        final File[] currentDir = new File[]{storageRoot};
+        final List<File> entries = new ArrayList<>();
+        final List<String> labels = new ArrayList<>();
+        final android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                labels
+        );
+        listView.setAdapter(adapter);
+
+        final Runnable refresh = new Runnable() {
+            @Override
+            public void run() {
+                labels.clear();
+                entries.clear();
+                final File dir = currentDir[0];
+                subtitle.setText(dir.getAbsolutePath());
+                if (dir.getParentFile() != null && dir.getAbsolutePath().startsWith(storageRoot.getAbsolutePath())) {
+                    entries.add(dir.getParentFile());
+                    labels.add("..");
+                }
+                final File[] children = dir.listFiles();
+                if (children != null) {
+                    final List<File> folders = new ArrayList<>();
+                    final List<File> audioFiles = new ArrayList<>();
+                    for (File child : children) {
+                        if (!child.canRead() || child.isHidden()) {
+                            continue;
+                        }
+                        if (child.isDirectory()) {
+                            folders.add(child);
+                        } else if (isAudioFile(child)) {
+                            audioFiles.add(child);
+                        }
+                    }
+                    Collections.sort(folders, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+                    Collections.sort(audioFiles, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+                    for (File folder : folders) {
+                        entries.add(folder);
+                        labels.add("[Folder] " + folder.getName());
+                    }
+                    for (File audio : audioFiles) {
+                        entries.add(audio);
+                        labels.add(audio.getName());
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+        };
+
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            final File selected = entries.get(position);
+            if (selected.isDirectory()) {
+                currentDir[0] = selected;
+                refresh.run();
+            } else {
+                dialog.dismiss();
+                attachDraftAudioFile(selected);
+            }
+        });
+
+        refresh.run();
+        root.addView(title);
+        root.addView(subtitle);
+        root.addView(listView);
+        dialog.setContentView(root);
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.show();
     }
 
     private void openCameraCapture() {
@@ -1027,9 +1741,12 @@ public class PortalInputActivity extends AppCompatActivity {
             _recorder.start(_activeRecordingFile);
             _recordStartedAt = System.currentTimeMillis();
             _handler.removeCallbacks(_recordPulseRunnable);
-            _recordButton.setAlpha(1f);
-            _recordButton.setScaleX(1f);
-            _recordButton.setScaleY(1f);
+            if (_recordPulseRing != null) {
+                _recordPulseRing.setVisibility(View.VISIBLE);
+                _recordPulseRing.setAlpha(0.18f);
+                _recordPulseRing.setScaleX(1f);
+                _recordPulseRing.setScaleY(1f);
+            }
             _handler.post(_recordPulseRunnable);
             tickRecordingStatus();
             refreshStatus();
@@ -1047,10 +1764,13 @@ public class PortalInputActivity extends AppCompatActivity {
         final File recorded = _recorder.consumeOutputFile();
         _handler.removeCallbacks(_previewRunnable);
         _handler.removeCallbacks(_recordPulseRunnable);
-        _recordButton.animate().cancel();
-        _recordButton.setAlpha(1f);
-        _recordButton.setScaleX(1f);
-        _recordButton.setScaleY(1f);
+        if (_recordPulseRing != null) {
+            _recordPulseRing.animate().cancel();
+            _recordPulseRing.setVisibility(View.GONE);
+            _recordPulseRing.setAlpha(0.18f);
+            _recordPulseRing.setScaleX(1f);
+            _recordPulseRing.setScaleY(1f);
+        }
         if (recorded != null && recorded.isFile()) {
             attachAudioFile(recorded);
         }
@@ -1071,14 +1791,61 @@ public class PortalInputActivity extends AppCompatActivity {
         if (_recordButton == null) {
             return;
         }
-        _recordButton.setText("");
+        _recordButton.setBackgroundColor(Color.TRANSPARENT);
+        _recordButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white)));
         if (_recorder.isRecording()) {
-            _recordButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+            if (_recordPulseRing != null) {
+                _recordPulseRing.setVisibility(View.VISIBLE);
+            }
             _recordButton.setContentDescription(getString(R.string.portal_stop_recording_accessibility));
         } else {
-            _recordButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+            if (_recordPulseRing != null) {
+                _recordPulseRing.animate().cancel();
+                _recordPulseRing.setVisibility(View.GONE);
+                _recordPulseRing.setAlpha(0.18f);
+                _recordPulseRing.setScaleX(1f);
+                _recordPulseRing.setScaleY(1f);
+            }
             _recordButton.setContentDescription(getString(R.string.record_audio));
         }
+    }
+
+    private void startSwipeHintPulse() {
+        if (_swipeChevronTop == null) {
+            return;
+        }
+        stopSwipeHintPulse();
+        _swipeChevronTopAnimator = ObjectAnimator.ofFloat(_swipeChevronTop, View.ALPHA, 0.30f, 0.70f);
+        _swipeChevronTopAnimator.setDuration(1200);
+        _swipeChevronTopAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        _swipeChevronTopAnimator.setRepeatMode(ValueAnimator.REVERSE);
+
+        _swipeChevronTopAnimator.start();
+    }
+
+    private void stopSwipeHintPulse() {
+        if (_swipeChevronTopAnimator != null) {
+            _swipeChevronTopAnimator.cancel();
+            _swipeChevronTopAnimator = null;
+        }
+    }
+
+    private void showAttachSheet() {
+        final BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.Theme_AppCompat_DayNight_Dialog_Rounded);
+        final View view = getLayoutInflater().inflate(R.layout.portal_sheet_attach, null, false);
+        final View attachImage = view.findViewById(R.id.portal_attach_image);
+        final View attachAudio = view.findViewById(R.id.portal_attach_audio);
+        attachImage.setOnClickListener(v -> {
+            dialog.dismiss();
+            openMediaPicker();
+        });
+        attachAudio.setOnClickListener(v -> {
+            dialog.dismiss();
+            showDraftAudioPicker();
+        });
+        dialog.setContentView(view);
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.show();
     }
 
     private void showDraftAudioPicker() {
@@ -1125,6 +1892,12 @@ public class PortalInputActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isAudioFile(@NonNull File file) {
+        final String ext = GsFileUtils.getFilenameExtension(file).toLowerCase(Locale.ENGLISH);
+        return ".m4a".equals(ext) || ".mp3".equals(ext) || ".wav".equals(ext)
+                || ".ogg".equals(ext) || ".aac".equals(ext) || ".flac".equals(ext);
+    }
+
     private void attachDraftAudioFile(@NonNull File source) {
         if (_sessionFile == null) {
             return;
@@ -1142,21 +1915,18 @@ public class PortalInputActivity extends AppCompatActivity {
         if (_sessionFile == null) {
             return;
         }
-        final String rel = _storage.relativeToSession(_sessionFile, file);
-        final String title = GsFileUtils.getFilenameWithoutExtension(file);
-        insertAtCursor("\n<audio src='" + rel + "' controls><a href='" + rel + "'>" + title + "</a></audio>\n");
         saveSession(false);
+        refreshAttachmentDrawer();
+        schedulePreviewRefresh();
     }
 
     private void attachImageFile(@NonNull File file) {
         if (_sessionFile == null) {
             return;
         }
-        final String rel = _storage.relativeToSession(_sessionFile, file);
-        final String title = GsFileUtils.getFilenameWithoutExtension(file);
-        insertAtCursor("\n![" + title + "](" + rel + ")\n");
         saveSession(false);
         refreshAttachmentDrawer();
+        schedulePreviewRefresh();
     }
 
     private void insertAtCursor(@NonNull String text) {
@@ -1225,6 +1995,7 @@ public class PortalInputActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Toast.makeText(this, R.string.error_picture_selection, Toast.LENGTH_SHORT).show();
             }
+            return;
         }
     }
 
@@ -1259,6 +2030,28 @@ public class PortalInputActivity extends AppCompatActivity {
     private boolean isImageFile(@NonNull File file) {
         final String ext = GsFileUtils.getFilenameExtension(file).toLowerCase(Locale.ENGLISH);
         return ".jpg".equals(ext) || ".jpeg".equals(ext) || ".png".equals(ext) || ".webp".equals(ext) || ".gif".equals(ext) || ".heic".equals(ext);
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    @NonNull
+    private GradientDrawable createRoundedBackground(int color, int radiusDp) {
+        final GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(color);
+        drawable.setCornerRadius(dp(radiusDp));
+        return drawable;
+    }
+
+    @NonNull
+    private GradientDrawable createAudioAttachmentBackground() {
+        final GradientDrawable drawable = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0xFF5E4545, 0xFF433236}
+        );
+        drawable.setCornerRadius(dp(24));
+        return drawable;
     }
 
     @Nullable
@@ -1329,28 +2122,105 @@ public class PortalInputActivity extends AppCompatActivity {
 
     private void showAudioPreview(@NonNull File file) {
         final Dialog dialog = new Dialog(this);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        final FrameLayout overlay = new FrameLayout(this);
+        overlay.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        overlay.setBackgroundColor(0x660B1020);
+        overlay.setOnClickListener(v -> dialog.dismiss());
+
         final LinearLayout root = new LinearLayout(this);
+        final FrameLayout.LayoutParams rootParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER
+        );
+        final int horizontalMargin = dp(28);
+        rootParams.leftMargin = horizontalMargin;
+        rootParams.rightMargin = horizontalMargin;
+        root.setLayoutParams(rootParams);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(28, 24, 28, 24);
-        root.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
+        root.setPadding(dp(22), dp(20), dp(22), dp(18));
+        root.setBackground(createAudioAttachmentBackground());
+        root.setClickable(true);
 
         final TextView title = new TextView(this);
+        final LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        title.setLayoutParams(titleParams);
         title.setText(file.getName());
-        title.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
-        title.setTextSize(18f);
+        title.setTextColor(ContextCompat.getColor(this, R.color.white));
+        title.setTextSize(16f);
+        title.setTypeface(title.getTypeface(), android.graphics.Typeface.BOLD);
+        title.setMaxLines(2);
+        title.setEllipsize(TextUtils.TruncateAt.END);
 
         final PortalAudioVisualizerView visualizerView = new PortalAudioVisualizerView(this);
-        visualizerView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 180));
+        final LinearLayout.LayoutParams visualizerParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(96)
+        );
+        visualizerParams.topMargin = dp(16);
+        visualizerView.setLayoutParams(visualizerParams);
 
         final SeekBar seek = new SeekBar(this);
-        final MaterialButton playPause = new MaterialButton(this);
-        playPause.setText(R.string.play);
+        final LinearLayout.LayoutParams seekParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        seekParams.topMargin = dp(8);
+        seek.setLayoutParams(seekParams);
+        seek.setThumbTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent)));
+        seek.setProgressTintList(ColorStateList.valueOf(0xFFF0B6B0));
+        seek.setProgressBackgroundTintList(ColorStateList.valueOf(0x3DFFFFFF));
 
+        final LinearLayout controlsRow = new LinearLayout(this);
+        final LinearLayout.LayoutParams controlsParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        controlsParams.topMargin = dp(12);
+        controlsRow.setLayoutParams(controlsParams);
+        controlsRow.setOrientation(LinearLayout.HORIZONTAL);
+        controlsRow.setGravity(Gravity.CENTER_VERTICAL);
+
+        final ImageButton playPause = new ImageButton(this);
+        final LinearLayout.LayoutParams playParams = new LinearLayout.LayoutParams(dp(42), dp(42));
+        playPause.setLayoutParams(playParams);
+        playPause.setBackground(createRoundedBackground(0x33FFFFFF, 21));
+        playPause.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white)));
+        playPause.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        playPause.setContentDescription(getString(R.string.play));
+        updateAudioPreviewPlayButton(playPause, false);
+
+        final TextView timeLabel = new TextView(this);
+        final LinearLayout.LayoutParams timeParams = new LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+        );
+        timeParams.leftMargin = dp(14);
+        timeLabel.setLayoutParams(timeParams);
+        timeLabel.setTextColor(0xDFFFFFFF);
+        timeLabel.setTextSize(13f);
+        timeLabel.setGravity(Gravity.END);
+        timeLabel.setText("0:00");
+
+        controlsRow.addView(playPause);
+        controlsRow.addView(timeLabel);
         root.addView(title);
         root.addView(visualizerView);
         root.addView(seek);
-        root.addView(playPause);
-        dialog.setContentView(root);
+        root.addView(controlsRow);
+        overlay.addView(root);
+        dialog.setContentView(overlay);
 
         final MediaPlayer player = new MediaPlayer();
         final Handler uiHandler = new Handler(Looper.getMainLooper());
@@ -1360,6 +2230,7 @@ public class PortalInputActivity extends AppCompatActivity {
             public void run() {
                 if (player.isPlaying()) {
                     seek.setProgress(player.getCurrentPosition());
+                    timeLabel.setText(formatPlaybackTime(player.getCurrentPosition(), player.getDuration()));
                     uiHandler.postDelayed(this, 150);
                 }
             }
@@ -1369,6 +2240,7 @@ public class PortalInputActivity extends AppCompatActivity {
             player.setDataSource(file.getAbsolutePath());
             player.prepare();
             seek.setMax(player.getDuration());
+            timeLabel.setText(formatPlaybackTime(0, player.getDuration()));
             visualizerRef[0] = new Visualizer(player.getAudioSessionId());
             visualizerRef[0].setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
             visualizerRef[0].setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
@@ -1390,10 +2262,10 @@ public class PortalInputActivity extends AppCompatActivity {
         playPause.setOnClickListener(v -> {
             if (player.isPlaying()) {
                 player.pause();
-                playPause.setText(R.string.play);
+                updateAudioPreviewPlayButton(playPause, false);
             } else {
                 player.start();
-                playPause.setText(R.string.pause);
+                updateAudioPreviewPlayButton(playPause, true);
                 uiHandler.post(seekSync);
             }
         });
@@ -1403,14 +2275,16 @@ public class PortalInputActivity extends AppCompatActivity {
                 if (fromUser) {
                     player.seekTo(progress);
                 }
+                timeLabel.setText(formatPlaybackTime(progress, player.getDuration()));
             }
 
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
         player.setOnCompletionListener(mp -> {
-            playPause.setText(R.string.play);
+            updateAudioPreviewPlayButton(playPause, false);
             seek.setProgress(seek.getMax());
+            timeLabel.setText(formatPlaybackTime(player.getDuration(), player.getDuration()));
         });
         dialog.setOnDismissListener(d -> {
             uiHandler.removeCallbacksAndMessages(null);
@@ -1431,6 +2305,47 @@ public class PortalInputActivity extends AppCompatActivity {
             }
         });
         dialog.show();
+    }
+
+    private void updateAudioPreviewPlayButton(@NonNull ImageButton button, boolean isPlaying) {
+        button.setImageResource(isPlaying
+                ? android.R.drawable.ic_media_pause
+                : android.R.drawable.ic_media_play);
+        button.setContentDescription(getString(isPlaying ? R.string.pause : R.string.play));
+    }
+
+    @NonNull
+    private String formatPlaybackTime(int currentMs, int totalMs) {
+        return formatMinutesSeconds(currentMs) + " / " + formatMinutesSeconds(totalMs);
+    }
+
+    @NonNull
+    private String formatMinutesSeconds(int millis) {
+        final int safeMillis = Math.max(0, millis);
+        final int totalSeconds = safeMillis / 1000;
+        return (totalSeconds / 60) + ":" + String.format(Locale.US, "%02d", totalSeconds % 60);
+    }
+
+    @NonNull
+    private String getFallbackClassification(@NonNull String deletedSlug) {
+        final LinkedHashSet<String> options = new LinkedHashSet<>(DEFAULT_CLASSIFICATIONS);
+        options.removeAll(_storage.getHiddenDefaultClassifications());
+        options.addAll(_storage.getCustomClassifications());
+        options.remove(deletedSlug);
+        if (!options.isEmpty()) {
+            return options.iterator().next();
+        }
+        return DEFAULT_CLASSIFICATION;
+    }
+
+    private boolean isDarkModeEnabled() {
+        return (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    @NonNull
+    private String toCssColor(int color) {
+        return String.format(Locale.US, "#%06X", 0xFFFFFF & color);
     }
 
     @Nullable

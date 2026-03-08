@@ -57,6 +57,13 @@ public class PortalTagStore {
         return out;
     }
 
+    public void removeTag(@NonNull String tag) {
+        _pref.edit()
+                .remove(PREFIX_COUNT + tag)
+                .remove(PREFIX_TIME + tag)
+                .apply();
+    }
+
     private static class TagStats {
         final String tag;
         final int count;
