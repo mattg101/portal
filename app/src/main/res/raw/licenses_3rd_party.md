@@ -5,7 +5,7 @@
 * writeily and writeily-pro
 ~° Copyright (c) 2014 Jeff Martin  
 ~° Copyright (c) 2015 Pedro Lafuente   
-~° Markor was initally forked from writeily-pro
+~° Portal was initally forked from writeily-pro
 ~° but most parts were completly rewritten.
 ~° Parts that were not modified / rewitten
 ~° from scratch are placed in the

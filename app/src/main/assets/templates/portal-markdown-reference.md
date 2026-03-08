@@ -78,7 +78,7 @@ awesome
 ## Links
 [Link](https://duckduckgo.com/)
 
-[File in same folder as the document.](markor-markdown-reference.md) Use %20 for spaces!
+[File in same folder as the document.](portal-markdown-reference.md) Use %20 for spaces!
 
 <!-- --------------- -->
 
@@ -236,7 +236,7 @@ Use one of these qualifiers to select the icon and the block color: abstract, su
 
 ------------------
 
-This Markdown reference file was created for the [Markor](https://github.com/gsantner/markor) project by [Gregor Santner](https://github.com/gsanter) and is licensed [Creative Commons Zero 1.0](https://creativecommons.org/publicdomain/zero/1.0/legalcode) (public domain). File revision 3.
+This Markdown reference file was created for the [Portal](https://github.com/mattg101/portal) project by [Gregor Santner](https://github.com/gsanter) and is licensed [Creative Commons Zero 1.0](https://creativecommons.org/publicdomain/zero/1.0/legalcode) (public domain). File revision 3.
 
 ------------------
 

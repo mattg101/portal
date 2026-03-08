@@ -193,7 +193,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="permissions">دسترسی‌ها</string>
     <string name="permission_paths_revert">بازگشت تنظیمات به مسیر پیش‌فرض؟</string>
     <string name="permission_not_granted">دسترسی داده نشد</string>
-    <string name="sync_to_local_folder_notice">Note: Sync apps may place files in custom folders. Open them by changing Markor\'s document folder accordingly, or in another file manager.</string>
+    <string name="sync_to_local_folder_notice">Note: Sync apps may place files in custom folders. Open them by changing Portal\'s document folder accordingly, or in another file manager.</string>
     <string name="vertical_alignment">Vertical alignment</string>
     <string name="horizontal_alignment">Horizontal alignment</string>
     <string name="default_">پیش‌فرض</string>
@@ -282,8 +282,8 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="appdata_private">AppData (private)</string>
     <string name="appdata_sdcard">AppData (SD Card)</string>
     <string name="internal_storage">حافظه داخلی</string>
-    <string name="open_the_document_from_main_view">You can open the document from main view on the bottom, the file browser or the launcher. There is also a option to append text shared into Markor.</string>
-    <string name="notebook_is_the_home_of_your_files">Notebook is the folder that Markor loads in the file browser when the app is started. It is the home folder of your files.</string>
+    <string name="open_the_document_from_main_view">You can open the document from main view on the bottom, the file browser or the launcher. There is also a option to append text shared into Portal.</string>
+    <string name="notebook_is_the_home_of_your_files">Notebook is the folder that Portal loads in the file browser when the app is started. It is the home folder of your files.</string>
     <string name="quicknote_is_the_fastest_option_to_write_down_notes">QuickNote is the fastest option to write down notes. It is a file in Markdown format with default location &gt;Notebook/QuickNote.md&lt;, you can set a custom filepath in the settings.</string>
     <string name="todo_is_the_easiest_way_">Manage your tasks with ToDo. It is a file in todo.txt format with default location &gt;Notebook/todo.txt&lt;, you can set a custom filepath in the settings.</string>
     <string name="navigationbar_color">رنگ نوار پیمایش</string>
@@ -435,7 +435,7 @@ work. If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
     <string name="error_could_not_open_file">ارور: فایل باز نشد.</string>
     <string name="document_error_clip">ارور: متن به کلیپبرد افزوده شد.</string>
     <string name="wont_save_min_length">جهت جلوگیری از ازدست‌رفتن داده، فایل‌هایی با تعداد کاراکتر کمتر از %d به‌صورت خودکار ذخیره نخواهند شد.</string>
-    <string name="advanced_filtering_help"><![CDATA[<small><a href="https://www.github.com/gsantner/markor/discussions/1940">
+    <string name="advanced_filtering_help"><![CDATA[<small><a href="https://github.com/mattg101/portal/discussions">
 سینتکس صافی پیشرفته </a></small>]]></string>
     <string name="filter">صافی</string>
 </resources>

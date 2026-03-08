@@ -100,26 +100,26 @@
                 <FrameLayout
                     android:id="@+id/portal_tags_container"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
+                    android:layout_height="56dp"
+                    android:layout_marginTop="-1dp">
 
                     <HorizontalScrollView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
                         android:fillViewport="true"
+                        android:scrollbarStyle="outsideOverlay"
                         android:scrollbars="none">
 
                         <FrameLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                            android:layout_height="match_parent">
 
                             <com.google.android.material.chip.ChipGroup
                                 android:id="@+id/portal_quick_tags_group"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_gravity="center_horizontal"
-                                android:paddingTop="4dp"
-                                android:paddingBottom="4dp"
+                                android:layout_gravity="center"
                                 app:chipSpacingHorizontal="8dp"
                                 app:chipSpacingVertical="0dp"
                                 app:singleLine="true" />
@@ -452,13 +452,15 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:foregroundGravity="center"
-                    android:padding="8dp">
+                    android:padding="4dp">
 
                     <View
                         android:id="@+id/portal_record_pulse_ring"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:layout_gravity="center"
                         android:background="@drawable/portal_record_pulse_ring"
                         android:visibility="gone" />
@@ -468,7 +470,7 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_gravity="center"
-                        android:background="@android:color/transparent"
+                        android:background="@null"
                         android:contentDescription="@string/record_audio"
                         android:padding="0dp"
                         android:scaleType="center"
@@ -548,32 +550,13 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:layout_marginStart="18dp"
             android:layout_marginEnd="18dp"
             android:text="@string/portal_classification"
             android:textColor="@color/primary_text"
             android:textSize="22sp"
             android:textStyle="bold" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/portal_class_add_custom"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginStart="18dp"
-            android:layout_marginEnd="18dp"
-            android:minHeight="54dp"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:text="@string/portal_add_classification"
-            android:textColor="@color/white"
-            android:textAllCaps="false"
-            app:backgroundTint="@color/accent"
-            app:cornerRadius="27dp"
-            app:icon="@drawable/ic_add_white_24dp"
-            app:iconTint="@color/white"
-            app:strokeColor="@color/accent" />
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
@@ -589,5 +572,37 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
         </androidx.core.widget.NestedScrollView>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="56dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/portal_class_add_custom"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="18dp"
+                android:contentDescription="@string/portal_add_classification"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text=""
+                app:backgroundTint="@color/accent"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_add_white_24dp"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="@color/white"
+                app:rippleColor="@color/white"
+                app:strokeColor="@color/accent" />
+        </FrameLayout>
     </LinearLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

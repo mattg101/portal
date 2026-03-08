@@ -1,6 +1,6 @@
-Markor v2.11.0 (147)
+Portal v2.11.0 (147)
 
-See details at https://github.com/gsantner/markor/blob/master/NEWS.md#markor-v211---asciidoc-csv-and-org-mode-todotxt-advanced-search-line-numbers
+See details at https://github.com/mattg101/portal/blob/master/NEWS.md#portal-v211---asciidoc-csv-and-org-mode-todotxt-advanced-search-line-numbers
 
 - Reworked attachments (PR #2106 by @harshad1)
 - Editor/viewer: Side margin improvements 2, closes #2111 (PR #2119 by @guanglinn)
