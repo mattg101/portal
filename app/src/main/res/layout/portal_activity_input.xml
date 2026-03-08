@@ -15,6 +15,7 @@
         android:clipToPadding="false">
 
         <LinearLayout
+            android:id="@+id/portal_content_column"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -137,13 +138,6 @@
                         </FrameLayout>
                     </HorizontalScrollView>
 
-                    <View
-                        android:layout_width="48dp"
-                        android:layout_height="44dp"
-                        android:layout_gravity="end"
-                        android:background="@drawable/portal_tags_fade_right"
-                        android:clickable="false"
-                        android:focusable="false" />
                 </FrameLayout>
 
                 <View
@@ -313,6 +307,7 @@
                             style="@style/Widget.MaterialComponents.Button.TextButton"
                             android:layout_width="40dp"
                             android:layout_height="40dp"
+                            android:layout_marginStart="10dp"
                             android:contentDescription="@string/insert_link"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
@@ -320,6 +315,23 @@
                             android:text=""
                             app:backgroundTint="@android:color/transparent"
                             app:icon="@drawable/ic_link_black_24dp"
+                            app:iconPadding="0dp"
+                            app:iconTint="@color/primary_text"
+                            app:rippleColor="@color/accent" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/portal_format_code"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="10dp"
+                            android:contentDescription="@string/code"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:minWidth="0dp"
+                            android:text=""
+                            app:backgroundTint="@android:color/transparent"
+                            app:icon="@drawable/ic_code_black_24dp"
                             app:iconPadding="0dp"
                             app:iconTint="@color/primary_text"
                             app:rippleColor="@color/accent" />
@@ -527,13 +539,6 @@
                 </FrameLayout>
             </LinearLayout>
         </LinearLayout>
-
-        <View
-            android:id="@+id/portal_classification_swipe_edge"
-            android:layout_width="136dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="end"
-            android:background="@android:color/transparent" />
 
     </FrameLayout>
 

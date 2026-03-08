@@ -74,6 +74,7 @@ import net.gsantner.opoc.util.GsFileUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,6 +124,7 @@ public class PortalInputActivity extends AppCompatActivity {
 
     private DrawerLayout _drawerRoot;
     private View _mainContent;
+    private View _contentColumn;
     private MaterialToolbar _toolbar;
     private EditText _titleInput;
     private EditText _editor;
@@ -137,7 +139,6 @@ public class PortalInputActivity extends AppCompatActivity {
     private View _publishArc;
     private View _recordPulseRing;
     private View _swipeChevronTop;
-    private View _classificationSwipeEdge;
     private AppCompatImageButton _recordButton;
     private MaterialButton _openClassificationButton;
     private MenuItem _previewMenuItem;
@@ -153,6 +154,10 @@ public class PortalInputActivity extends AppCompatActivity {
     private File _activeRecordingFile;
     private long _recordStartedAt;
     private boolean _renderMarkdown;
+    private boolean _suppressEditorAutoFormat;
+    private int _editorChangeStart;
+    private int _editorChangeBefore;
+    private int _editorChangeCount;
     private float _swipeDownX;
     private float _swipeDownY;
     private final List<String> _selectedTags = new ArrayList<>();
@@ -211,6 +216,7 @@ public class PortalInputActivity extends AppCompatActivity {
     private void bindViews() {
         _drawerRoot = findViewById(R.id.portal_drawer_root);
         _mainContent = findViewById(R.id.portal_main_content);
+        _contentColumn = findViewById(R.id.portal_content_column);
         _toolbar = findViewById(R.id.portal_top_toolbar);
         _titleInput = findViewById(R.id.portal_title);
         _editor = findViewById(R.id.portal_editor);
@@ -225,7 +231,6 @@ public class PortalInputActivity extends AppCompatActivity {
         _publishArc = findViewById(R.id.portal_publish_arc);
         _recordPulseRing = findViewById(R.id.portal_record_pulse_ring);
         _swipeChevronTop = findViewById(R.id.portal_swipe_chevron_top);
-        _classificationSwipeEdge = findViewById(R.id.portal_classification_swipe_edge);
         _recordButton = findViewById(R.id.portal_action_record);
 
         final MaterialButton camera = findViewById(R.id.portal_action_camera);
@@ -239,6 +244,7 @@ public class PortalInputActivity extends AppCompatActivity {
         final MaterialButton fmtQuote = findViewById(R.id.portal_format_quote);
         final MaterialButton fmtUnderline = findViewById(R.id.portal_format_underline);
         final MaterialButton fmtLink = findViewById(R.id.portal_format_link);
+        final MaterialButton fmtCode = findViewById(R.id.portal_format_code);
         final MaterialButton addCustomClassification = findViewById(R.id.portal_class_add_custom);
         final MaterialButton openSettings = findViewById(R.id.portal_open_settings_button);
         final MaterialButton openClassification = findViewById(R.id.portal_open_classification_button);
@@ -273,9 +279,17 @@ public class PortalInputActivity extends AppCompatActivity {
         _toolbar.setOnClickListener(v -> startActivity(new Intent(this, PortalSessionBrowserActivity.class)));
 
         _editor.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                _editorChangeStart = start;
+                _editorChangeBefore = count;
+            }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                _editorChangeStart = start;
+                _editorChangeBefore = before;
+                _editorChangeCount = count;
+            }
             @Override public void afterTextChanged(Editable s) {
+                maybeApplyEditorAutoFormatting(s);
                 schedulePreviewRefresh();
             }
         });
@@ -300,13 +314,13 @@ public class PortalInputActivity extends AppCompatActivity {
         fmtHeading.setOnClickListener(v -> toggleHeadingAtSelection());
         fmtHeading2.setOnClickListener(v -> toggleHeadingAtSelection(2));
         fmtBold.setOnClickListener(v -> wrapSelection("**", "**"));
-        fmtItalic.setOnClickListener(v -> wrapSelection("_", "_"));
+        fmtItalic.setOnClickListener(v -> wrapSelection("*", "*"));
         fmtBullets.setOnClickListener(v -> prefixLines("- "));
         fmtNumbers.setOnClickListener(v -> prefixNumberedLines());
         fmtQuote.setOnClickListener(v -> prefixLines("> "));
         fmtUnderline.setOnClickListener(v -> wrapSelection("<u>", "</u>"));
         fmtLink.setOnClickListener(v -> formatLinkAtSelection());
-        attachSwipeOpener(_classificationSwipeEdge);
+        fmtCode.setOnClickListener(v -> wrapBlock("```\n", "\n```"));
         bottomToolbar.setOnTouchListener((v, event) -> {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
@@ -343,6 +357,7 @@ public class PortalInputActivity extends AppCompatActivity {
         startSwipeHintPulse();
         refreshPreviewActionState();
         _drawerRoot.setScrimColor(Color.TRANSPARENT);
+        expandClassificationDrawerSwipeZone();
         _drawerRoot.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
             @Override
             public void onDrawerOpened(@NonNull View drawerView) {
@@ -362,8 +377,19 @@ public class PortalInputActivity extends AppCompatActivity {
             contentRoot.getWindowVisibleDisplayFrame(visible);
             final int heightDiff = contentRoot.getRootView().getHeight() - visible.height();
             final boolean keyboardVisible = heightDiff > (int) (120 * getResources().getDisplayMetrics().density);
-            bottomToolbar.setVisibility(keyboardVisible ? View.GONE : View.VISIBLE);
+            bottomToolbar.setVisibility(View.VISIBLE);
             _attachmentStrip.setVisibility((_renderMarkdown || keyboardVisible) ? View.GONE : (_attachmentList.getChildCount() > 0 ? View.VISIBLE : View.GONE));
+            if (_contentColumn != null) {
+                final int bottom = keyboardVisible ? 0 : dp(156);
+                if (_contentColumn.getPaddingBottom() != bottom) {
+                    _contentColumn.setPadding(
+                            _contentColumn.getPaddingLeft(),
+                            _contentColumn.getPaddingTop(),
+                            _contentColumn.getPaddingRight(),
+                            bottom
+                    );
+                }
+            }
         });
     }
 
@@ -413,6 +439,26 @@ public class PortalInputActivity extends AppCompatActivity {
     private void resetDrawerTranslations() {
         if (_classificationDrawer != null) {
             _classificationDrawer.setTranslationX(0f);
+        }
+    }
+
+    private void expandClassificationDrawerSwipeZone() {
+        if (_drawerRoot == null) {
+            return;
+        }
+        try {
+            final Field rightDraggerField = DrawerLayout.class.getDeclaredField("mRightDragger");
+            rightDraggerField.setAccessible(true);
+            final Object rightDragger = rightDraggerField.get(_drawerRoot);
+            if (rightDragger == null) {
+                return;
+            }
+            final Field edgeSizeField = rightDragger.getClass().getDeclaredField("mEdgeSize");
+            edgeSizeField.setAccessible(true);
+            final int current = edgeSizeField.getInt(rightDragger);
+            final int target = Math.max(current, getResources().getDisplayMetrics().widthPixels / 3);
+            edgeSizeField.setInt(rightDragger, target);
+        } catch (Exception ignored) {
         }
     }
 
@@ -722,8 +768,33 @@ public class PortalInputActivity extends AppCompatActivity {
             start = end;
             end = tmp;
         }
+        if (start == end) {
+            e.insert(start, prefix + suffix);
+            _editor.setSelection(start + prefix.length());
+            return;
+        }
         e.insert(end, suffix);
         e.insert(start, prefix);
+        _editor.setSelection(end + prefix.length() + suffix.length());
+    }
+
+    private void wrapBlock(@NonNull String prefix, @NonNull String suffix) {
+        final Editable e = _editor.getText();
+        int start = Math.max(0, _editor.getSelectionStart());
+        int end = Math.max(0, _editor.getSelectionEnd());
+        if (start > end) {
+            final int tmp = start;
+            start = end;
+            end = tmp;
+        }
+        if (start == end) {
+            e.insert(start, prefix + suffix);
+            _editor.setSelection(start + prefix.length());
+            return;
+        }
+        e.insert(end, suffix);
+        e.insert(start, prefix);
+        _editor.setSelection(end + prefix.length() + suffix.length());
     }
 
     private void prefixLines(@NonNull String prefix) {
@@ -738,6 +809,7 @@ public class PortalInputActivity extends AppCompatActivity {
         final String selected = e.subSequence(start, end).toString();
         if (selected.isEmpty()) {
             e.insert(start, prefix);
+            _editor.setSelection(start + prefix.length());
             return;
         }
         final String[] lines = selected.split("\\n", -1);
@@ -749,6 +821,7 @@ public class PortalInputActivity extends AppCompatActivity {
             }
         }
         e.replace(start, end, out.toString());
+        _editor.setSelection(start + out.length());
     }
 
     private void prefixNumberedLines() {
@@ -774,6 +847,81 @@ public class PortalInputActivity extends AppCompatActivity {
             }
         }
         e.replace(start, end, out.toString());
+    }
+
+    private void maybeApplyEditorAutoFormatting(@NonNull Editable e) {
+        if (_suppressEditorAutoFormat) {
+            return;
+        }
+        if (_editorChangeCount > _editorChangeBefore) {
+            final int end = Math.min(e.length(), _editorChangeStart + _editorChangeCount);
+            final String inserted = e.subSequence(Math.max(0, _editorChangeStart), end).toString();
+            if (inserted.contains("\n")) {
+                continueListOnNewline(e);
+            }
+            return;
+        }
+        if (_editorChangeBefore > _editorChangeCount) {
+            maybeRemoveEmptyListMarkerOnBackspace(e);
+        }
+    }
+
+    private void continueListOnNewline(@NonNull Editable e) {
+        final int cursor = Math.max(0, _editor.getSelectionStart());
+        final int currentLineStart = findLineStart(e, cursor);
+        final int previousLineEnd = Math.max(0, currentLineStart - 1);
+        final int previousLineStart = findLineStart(e, previousLineEnd);
+        final String previousLine = e.subSequence(previousLineStart, previousLineEnd).toString();
+
+        String prefix = null;
+        java.util.regex.Matcher bullet = java.util.regex.Pattern.compile("^(\\s*[-*+]\\s).+").matcher(previousLine);
+        if (bullet.matches()) {
+            prefix = bullet.group(1);
+        } else {
+            java.util.regex.Matcher numbered = java.util.regex.Pattern.compile("^(\\s*)(\\d+)\\.\\s+.+").matcher(previousLine);
+            if (numbered.matches()) {
+                final int next = Integer.parseInt(numbered.group(2)) + 1;
+                prefix = numbered.group(1) + next + ". ";
+            }
+        }
+        if (TextUtils.isEmpty(prefix)) {
+            return;
+        }
+        _suppressEditorAutoFormat = true;
+        try {
+            e.insert(cursor, prefix);
+            _editor.setSelection(cursor + prefix.length());
+        } finally {
+            _suppressEditorAutoFormat = false;
+        }
+    }
+
+    private void maybeRemoveEmptyListMarkerOnBackspace(@NonNull Editable e) {
+        final int cursor = Math.max(0, _editor.getSelectionStart());
+        final int lineStart = findLineStart(e, cursor);
+        int lineEnd = cursor;
+        while (lineEnd < e.length() && e.charAt(lineEnd) != '\n') {
+            lineEnd++;
+        }
+        final String line = e.subSequence(lineStart, lineEnd).toString();
+        if (!line.matches("^\\s*([-*+]|\\d+\\.)$")) {
+            return;
+        }
+        _suppressEditorAutoFormat = true;
+        try {
+            e.delete(lineStart, lineEnd);
+            _editor.setSelection(lineStart);
+        } finally {
+            _suppressEditorAutoFormat = false;
+        }
+    }
+
+    private int findLineStart(@NonNull Editable e, int index) {
+        int start = Math.max(0, Math.min(index, e.length()));
+        while (start > 0 && e.charAt(start - 1) != '\n') {
+            start--;
+        }
+        return start;
     }
 
     private void formatLinkAtSelection() {
@@ -1098,9 +1246,10 @@ public class PortalInputActivity extends AppCompatActivity {
             return;
         }
         try {
-            final String bodySource = PortalAttachmentPreviewHelper.stripLegacyAttachmentMarkup(
+            final String rawBodySource = PortalAttachmentPreviewHelper.stripLegacyAttachmentMarkup(
                     _editor.getText() == null ? "" : _editor.getText().toString()
             );
+            final String bodySource = normalizeQuoteBlocksForPreview(rawBodySource);
             final String htmlBody = MarkdownTextConverter.flexmarkRenderer.render(
                     MarkdownTextConverter.flexmarkParser.parse(bodySource)
             );
@@ -1109,6 +1258,10 @@ public class PortalInputActivity extends AppCompatActivity {
                     + "<style>body{font-family:sans-serif;padding:18px;color:#111827;background:#EEEEEE;}"
                     + ".portal-preview-shell{padding-bottom:28px;}"
                     + ".portal-preview-body{padding:2px 6px 0;}"
+                    + ".portal-preview-body h1,.portal-preview-body h2,.portal-preview-body h3,.portal-preview-body h4,.portal-preview-body h5,.portal-preview-body h6{color:#111827;text-decoration:none;}"
+                    + ".portal-preview-body h1 a,.portal-preview-body h2 a,.portal-preview-body h3 a,.portal-preview-body h4 a,.portal-preview-body h5 a,.portal-preview-body h6 a{color:inherit!important;text-decoration:none!important;pointer-events:none;}"
+                    + ".portal-preview-body blockquote{margin:18px 0!important;padding:16px 18px 16px 20px!important;border:1px solid rgba(239,93,86,.28);border-left:6px solid #ef5d56;border-radius:18px;background:#fff1ef;color:#374151;box-shadow:0 8px 20px rgba(17,24,39,.08);}"
+                    + ".portal-preview-body blockquote p{margin:0!important;}"
                     + ".portal-preview-body img{max-width:100%;height:auto;border-radius:18px;}"
                     + ".portal-preview-body audio{width:100%;margin-top:16px;}"
                     + ".portal-preview-body pre{white-space:pre-wrap;}"
@@ -1121,6 +1274,35 @@ public class PortalInputActivity extends AppCompatActivity {
             _previewWeb.loadDataWithBaseURL(baseUrl, html, "text/html", "utf-8", null);
         } catch (Exception ignored) {
         }
+    }
+
+    @NonNull
+    private String normalizeQuoteBlocksForPreview(@NonNull String text) {
+        final String[] lines = text.split("\\r?\\n", -1);
+        final StringBuilder out = new StringBuilder();
+        final StringBuilder quote = new StringBuilder();
+        for (String line : lines) {
+            if (line.startsWith("> ")) {
+                if (quote.length() > 0) {
+                    quote.append("\n");
+                }
+                quote.append(line.substring(2));
+                continue;
+            }
+            if (quote.length() > 0) {
+                out.append("<blockquote>")
+                        .append(quote.toString().replace("\n", "<br/>"))
+                        .append("</blockquote>\n");
+                quote.setLength(0);
+            }
+            out.append(line).append("\n");
+        }
+        if (quote.length() > 0) {
+            out.append("<blockquote>")
+                    .append(quote.toString().replace("\n", "<br/>"))
+                    .append("</blockquote>\n");
+        }
+        return out.toString();
     }
 
     private void openMediaPicker() {
