@@ -51,20 +51,13 @@
                     android:includeFontPadding="false"
                     android:inputType="textCapSentences"
                     android:maxLines="1"
-                    android:minHeight="40dp"
+                    android:minHeight="34dp"
                     android:paddingTop="0dp"
                     android:paddingBottom="0dp"
                     android:textColor="@color/primary_text"
                     android:textColorHint="@color/secondary_text"
                     android:textSize="22sp"
                     android:textStyle="bold" />
-
-                <View
-                    android:id="@+id/portal_section_divider_top"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="10dp"
-                    android:background="#1E1E2135" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/portal_open_settings_button"
@@ -81,39 +74,34 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="8dp">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/portal_open_classification_button"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:background="@android:color/transparent"
-                        android:minHeight="40dp"
-                        android:minWidth="0dp"
+                        android:minHeight="48dp"
+                        android:minWidth="148dp"
+                        android:paddingStart="20dp"
                         android:paddingTop="0dp"
+                        android:paddingEnd="20dp"
                         android:paddingBottom="0dp"
                         android:text="@string/portal_open_classification"
                         android:textAllCaps="false"
                         android:textColor="@color/primary_text"
                         android:textStyle="bold"
-                        app:backgroundTint="@android:color/transparent"
+                        app:backgroundTint="@color/portal_chip_unselected_bg"
+                        app:cornerRadius="10dp"
                         app:rippleColor="@color/accent" />
                 </FrameLayout>
-
-                <View
-                    android:id="@+id/portal_section_divider_tags"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="2dp"
-                    android:background="#1E1E2135" />
 
                 <FrameLayout
                     android:id="@+id/portal_tags_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="8dp">
 
                     <HorizontalScrollView
                         android:layout_width="match_parent"
@@ -144,14 +132,14 @@
                     android:id="@+id/portal_section_divider_format_top"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginTop="4dp"
-                    android:background="#1E1E2135" />
+                    android:layout_marginTop="2dp"
+                    android:background="@color/portal_divider" />
 
                 <HorizontalScrollView
                     android:id="@+id/portal_format_scroll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
                     android:fillViewport="true"
                     android:scrollbars="none">
 
@@ -343,8 +331,8 @@
                     android:id="@+id/portal_editor_divider"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginTop="10dp"
-                    android:background="#1E1E2135" />
+                    android:layout_marginTop="6dp"
+                    android:background="@color/portal_divider" />
 
                 <TextView
                     android:id="@+id/portal_status"
@@ -579,10 +567,12 @@
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
             android:text="@string/portal_add_classification"
+            android:textColor="@color/white"
             android:textAllCaps="false"
+            app:backgroundTint="@color/accent"
             app:cornerRadius="27dp"
             app:icon="@drawable/ic_add_white_24dp"
-            app:iconTint="@color/accent"
+            app:iconTint="@color/white"
             app:strokeColor="@color/accent" />
 
         <androidx.core.widget.NestedScrollView

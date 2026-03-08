@@ -88,6 +88,12 @@ public class PortalStorage {
         _pref.edit().putStringSet(KEY_CUSTOM_CLASSIFICATIONS, next).apply();
     }
 
+    public void removeCustomClassification(@NonNull String slug) {
+        final java.util.LinkedHashSet<String> next = new java.util.LinkedHashSet<>(getCustomClassifications());
+        next.remove(slug.trim());
+        _pref.edit().putStringSet(KEY_CUSTOM_CLASSIFICATIONS, next).apply();
+    }
+
     public File getSessionsDir() {
         return new File(getNotebookRoot(), DIR_INBOX);
     }

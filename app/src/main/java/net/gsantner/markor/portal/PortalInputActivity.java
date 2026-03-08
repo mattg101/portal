@@ -57,6 +57,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
@@ -154,6 +156,7 @@ public class PortalInputActivity extends AppCompatActivity {
     private File _activeRecordingFile;
     private long _recordStartedAt;
     private boolean _renderMarkdown;
+    private boolean _keyboardVisible;
     private boolean _suppressEditorAutoFormat;
     private int _editorChangeStart;
     private int _editorChangeBefore;
@@ -372,25 +375,37 @@ public class PortalInputActivity extends AppCompatActivity {
         });
 
         final View contentRoot = findViewById(android.R.id.content);
-        contentRoot.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            final Rect visible = new Rect();
-            contentRoot.getWindowVisibleDisplayFrame(visible);
-            final int heightDiff = contentRoot.getRootView().getHeight() - visible.height();
-            final boolean keyboardVisible = heightDiff > (int) (120 * getResources().getDisplayMetrics().density);
-            bottomToolbar.setVisibility(View.VISIBLE);
-            _attachmentStrip.setVisibility((_renderMarkdown || keyboardVisible) ? View.GONE : (_attachmentList.getChildCount() > 0 ? View.VISIBLE : View.GONE));
-            if (_contentColumn != null) {
-                final int bottom = keyboardVisible ? 0 : dp(156);
-                if (_contentColumn.getPaddingBottom() != bottom) {
-                    _contentColumn.setPadding(
-                            _contentColumn.getPaddingLeft(),
-                            _contentColumn.getPaddingTop(),
-                            _contentColumn.getPaddingRight(),
-                            bottom
-                    );
-                }
-            }
+        ViewCompat.setOnApplyWindowInsetsListener(contentRoot, (v, insets) -> {
+            applyKeyboardState(insets.isVisible(WindowInsetsCompat.Type.ime()));
+            return insets;
         });
+        contentRoot.post(() -> {
+            final WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(contentRoot);
+            applyKeyboardState(insets != null && insets.isVisible(WindowInsetsCompat.Type.ime()));
+        });
+    }
+
+    private void applyKeyboardState(boolean keyboardVisible) {
+        if (_keyboardVisible == keyboardVisible) {
+            return;
+        }
+        _keyboardVisible = keyboardVisible;
+        if (_attachmentStrip != null) {
+            _attachmentStrip.setVisibility((_renderMarkdown || keyboardVisible) ? View.GONE : (_attachmentList.getChildCount() > 0 ? View.VISIBLE : View.GONE));
+        }
+        final View bottomToolbar = findViewById(R.id.portal_bottom_toolbar);
+        if (bottomToolbar != null) {
+            bottomToolbar.setVisibility(keyboardVisible ? View.GONE : View.VISIBLE);
+        }
+        if (_contentColumn != null) {
+            final int bottom = keyboardVisible ? 0 : dp(156);
+            _contentColumn.setPadding(
+                    _contentColumn.getPaddingLeft(),
+                    _contentColumn.getPaddingTop(),
+                    _contentColumn.getPaddingRight(),
+                    bottom
+            );
+        }
     }
 
     private void attachSwipeOpener(@Nullable View target) {
@@ -640,7 +655,7 @@ public class PortalInputActivity extends AppCompatActivity {
         int i = 0;
         for (String tag : visibleTags) {
             final Chip chip = new Chip(this);
-            chip.setText("#" + tag);
+            chip.setText(tag);
             chip.setCheckable(false);
             chip.setChecked(false);
             chip.setCheckedIconVisible(false);
@@ -656,10 +671,21 @@ public class PortalInputActivity extends AppCompatActivity {
             chip.setTextEndPadding(dp(8));
             chip.setChipStrokeWidth(dp(1));
             final boolean selected = _selectedTags.contains(tag);
-            chip.setChipBackgroundColor(ColorStateList.valueOf(selected ? 0xFFF04B4B : 0x14A0A4B8));
-            chip.setChipStrokeColor(ColorStateList.valueOf(selected ? 0x00F04B4B : 0x40979CAF));
-            chip.setTextColor(selected ? 0xFFFFFFFF : 0xFF4E5568);
+            chip.setChipBackgroundColor(ColorStateList.valueOf(selected
+                    ? ContextCompat.getColor(this, R.color.accent)
+                    : ContextCompat.getColor(this, R.color.portal_chip_unselected_bg)));
+            chip.setChipStrokeColor(ColorStateList.valueOf(selected
+                    ? 0x00F04B4B
+                    : ContextCompat.getColor(this, R.color.portal_chip_unselected_stroke)));
+            chip.setTextColor(selected
+                    ? ContextCompat.getColor(this, R.color.white)
+                    : ContextCompat.getColor(this, R.color.portal_chip_unselected_text));
+            chip.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             chip.setOnClickListener(v -> toggleTagSelection(tag));
+            chip.setOnLongClickListener(v -> {
+                showDeleteTagDialog(tag);
+                return true;
+            });
             _quickTagsGroup.addView(chip);
             i++;
         }
@@ -674,8 +700,8 @@ public class PortalInputActivity extends AppCompatActivity {
         addChip.setChipEndPadding(dp(8));
         addChip.setChipStrokeWidth(dp(1));
         addChip.setChipBackgroundColor(ColorStateList.valueOf(0x00000000));
-        addChip.setChipStrokeColor(ColorStateList.valueOf(0x40979CAF));
-        addChip.setTextColor(0xFF4E5568);
+        addChip.setChipStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.portal_chip_unselected_stroke)));
+        addChip.setTextColor(ContextCompat.getColor(this, R.color.portal_chip_unselected_text));
         addChip.setOnClickListener(v -> showAddTagDialog());
         _quickTagsGroup.addView(addChip);
     }
@@ -706,6 +732,20 @@ public class PortalInputActivity extends AppCompatActivity {
                             schedulePreviewRefresh();
                         }
                     }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showDeleteTagDialog(@NonNull String tag) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.delete)
+                .setMessage("Delete tag \"" + tag + "\"?")
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    _selectedTags.remove(tag);
+                    _tagStore.removeTag(tag);
+                    renderQuickTags();
+                    schedulePreviewRefresh();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
@@ -1144,6 +1184,10 @@ public class PortalInputActivity extends AppCompatActivity {
             schedulePreviewRefresh();
             _drawerRoot.closeDrawer(GravityCompat.END);
         });
+        button.setOnLongClickListener(v -> {
+            showDeleteClassificationDialog(slug);
+            return true;
+        });
         return button;
     }
 
@@ -1162,6 +1206,27 @@ public class PortalInputActivity extends AppCompatActivity {
                         refreshStatus();
                         schedulePreviewRefresh();
                     }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showDeleteClassificationDialog(@NonNull String slug) {
+        if (DEFAULT_CLASSIFICATIONS.contains(slug)) {
+            Toast.makeText(this, "Default note types cannot be deleted", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.delete)
+                .setMessage("Delete note type \"" + humanizeSlug(slug) + "\"?")
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    _storage.removeCustomClassification(slug);
+                    if (slug.equals(_classificationSlug)) {
+                        _classificationSlug = DEFAULT_CLASSIFICATION;
+                    }
+                    refreshClassificationDrawer();
+                    refreshStatus();
+                    schedulePreviewRefresh();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
@@ -1250,9 +1315,10 @@ public class PortalInputActivity extends AppCompatActivity {
                     _editor.getText() == null ? "" : _editor.getText().toString()
             );
             final String bodySource = normalizeQuoteBlocksForPreview(rawBodySource);
-            final String htmlBody = MarkdownTextConverter.flexmarkRenderer.render(
+            String htmlBody = MarkdownTextConverter.flexmarkRenderer.render(
                     MarkdownTextConverter.flexmarkParser.parse(bodySource)
             );
+            htmlBody = htmlBody.replaceAll("(?s)<p>&gt;\\s*(.*?)</p>", "<blockquote><p>$1</p></blockquote>");
             final String attachmentCards = PortalAttachmentPreviewHelper.buildAttachmentCardsHtml(_sessionFile);
             final String html = "<html><head><meta name='viewport' content='width=device-width, initial-scale=1' />"
                     + "<style>body{font-family:sans-serif;padding:18px;color:#111827;background:#EEEEEE;}"
