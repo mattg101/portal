@@ -530,6 +530,16 @@
             </LinearLayout>
         </LinearLayout>
 
+        <View
+            android:id="@+id/portal_send_flash_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0"
+            android:background="@drawable/portal_send_vignette"
+            android:clickable="false"
+            android:focusable="false"
+            android:visibility="gone" />
+
     </FrameLayout>
 
     <LinearLayout

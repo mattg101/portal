@@ -178,7 +178,43 @@ public class PortalStorage {
         return dest;
     }
 
+    public File exportSessionToSendRoot(@NonNull File session) throws IOException {
+        final File sessionDir = session.getParentFile();
+        if (sessionDir == null || !sessionDir.isDirectory()) {
+            throw new IOException("Session directory not found");
+        }
+        final File sendRoot = getNotebookRoot();
+        //noinspection ResultOfMethodCallIgnored
+        sendRoot.mkdirs();
+        final File destDir = GsFileUtils.findNonConflictingDest(sendRoot, sessionDir.getName());
+        copyDirectoryRecursive(sessionDir, destDir);
+        return new File(destDir, session.getName());
+    }
+
     public String relativeToSession(@NonNull File session, @NonNull File target) {
         return GsFileUtils.relativePath(session, target);
+    }
+
+    private void copyDirectoryRecursive(@NonNull File source, @NonNull File dest) throws IOException {
+        if (source.isDirectory()) {
+            if (!dest.exists() && !dest.mkdirs()) {
+                throw new IOException("Could not create directory: " + dest.getAbsolutePath());
+            }
+            final File[] children = source.listFiles();
+            if (children == null) {
+                return;
+            }
+            for (File child : children) {
+                copyDirectoryRecursive(child, new File(dest, child.getName()));
+            }
+            return;
+        }
+        final File parent = dest.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            throw new IOException("Could not create parent directory: " + parent.getAbsolutePath());
+        }
+        if (!GsFileUtils.copyFile(source, dest)) {
+            throw new IOException("Could not copy file: " + source.getAbsolutePath());
+        }
     }
 }

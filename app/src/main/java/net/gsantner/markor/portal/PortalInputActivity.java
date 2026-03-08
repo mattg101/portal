@@ -140,6 +140,7 @@ public class PortalInputActivity extends AppCompatActivity {
     private LinearLayout _classificationList;
     private View _classificationDrawer;
     private View _publishArc;
+    private View _sendFlashOverlay;
     private View _recordPulseRing;
     private View _swipeChevronTop;
     private AppCompatImageButton _recordButton;
@@ -233,6 +234,7 @@ public class PortalInputActivity extends AppCompatActivity {
         _classificationList = findViewById(R.id.portal_classification_list);
         _classificationDrawer = findViewById(R.id.portal_classification_drawer);
         _publishArc = findViewById(R.id.portal_publish_arc);
+        _sendFlashOverlay = findViewById(R.id.portal_send_flash_overlay);
         _recordPulseRing = findViewById(R.id.portal_record_pulse_ring);
         _swipeChevronTop = findViewById(R.id.portal_swipe_chevron_top);
         _recordButton = findViewById(R.id.portal_action_record);
@@ -1458,10 +1460,18 @@ public class PortalInputActivity extends AppCompatActivity {
     }
 
     private void publishNote() {
+        playSendFlash();
         if (_recorder.isRecording()) {
             stopRecordingAndAttach();
         }
         saveSession(true);
+        try {
+            if (_sessionFile != null && _sessionFile.exists()) {
+                _storage.exportSessionToSendRoot(_sessionFile);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.could_not_save_file, Toast.LENGTH_SHORT).show();
+        }
         try {
             _sessionFile = _repo.createSession();
             _titleInput.setText("");
@@ -1476,6 +1486,32 @@ public class PortalInputActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, R.string.error_could_not_open_file, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void playSendFlash() {
+        if (_sendFlashOverlay == null) {
+            return;
+        }
+        _sendFlashOverlay.animate().cancel();
+        _sendFlashOverlay.setVisibility(View.VISIBLE);
+        _sendFlashOverlay.setAlpha(0f);
+        _sendFlashOverlay.animate()
+                .alpha(0.55f)
+                .setDuration(180)
+                .withEndAction(() -> _sendFlashOverlay.animate()
+                        .alpha(0.22f)
+                        .setDuration(220)
+                        .withEndAction(() -> _sendFlashOverlay.animate()
+                                .alpha(0.44f)
+                                .setDuration(220)
+                                .withEndAction(() -> _sendFlashOverlay.animate()
+                                        .alpha(0f)
+                                        .setDuration(380)
+                                        .withEndAction(() -> _sendFlashOverlay.setVisibility(View.GONE))
+                                        .start())
+                                .start())
+                        .start())
+                .start();
     }
 
     private void applyRenderMode() {
